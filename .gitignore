@@ -9,3 +9,6 @@ users.db
 secrets/firebase-service-account.json
 secrets/serviceAccountKey.json
 secrets/*.json
+
+static/uploads/
+
