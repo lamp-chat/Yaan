@@ -1,0 +1,11 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.idea/
+*.iml
+*.db
+users.db
+secrets/firebase-service-account.json
+secrets/serviceAccountKey.json
+secrets/*.json

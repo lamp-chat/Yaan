@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Upgrade Plan · Lamp</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='billing/pricing.css', v=static_v) }}">
+  <script>
+    window.__Lamp_BILLING__ = {
+      stripeEnabled: {{ stripe_enabled|tojson }},
+      currentPlan: {{ current_plan|tojson }},
+      freeDailyLimit: {{ free_daily_limit|tojson }},
+      prices: {{ prices|tojson }},
+      billing: {{ billing|tojson }},
+    };
+  </script>
+  <script src="{{ url_for('static', filename='billing/pricing.js', v=static_v) }}" defer></script>
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+
+  <header class="top">
+    <a class="brand" href="/ai">
+      <img class="logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="Lamp">
+      <div class="brand__meta">
+        <div class="brand__name">Lamp</div>
+        <div class="brand__sub">Upgrade Plan</div>
+      </div>
+    </a>
+
+    <div class="top__actions">
+      <a class="link" href="/ai">Back to chat</a>
+      <button class="btn ghost" id="manageBtn" type="button">Manage Billing</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <h1>Upgrade your thinking OS.</h1>
+      <p class="sub">
+        Choose a plan that matches how you build, learn, and create with Lamp.
+      </p>
+
+      <div class="toggle" role="group" aria-label="Billing period">
+        <button class="toggle__btn active" id="monthlyBtn" type="button">Monthly</button>
+        <button class="toggle__btn" id="yearlyBtn" type="button">
+          Yearly <span class="badge">Save 20%</span>
+        </button>
+      </div>
+
+      <div class="notice" id="stripeNotice" hidden>
+        Billing isn’t configured yet. Set `STRIPE_SECRET_KEY` and price IDs to enable checkout.
+      </div>
+    </section>
+
+    <section class="grid" aria-label="Pricing tiers">
+      <article class="card">
+        <div class="card__top">
+          <div class="plan">Free</div>
+          <div class="price">
+            <span class="price__amt">$0</span>
+            <span class="price__per">/ mo</span>
+          </div>
+          <div class="hint">Great for trying Lamp.</div>
+        </div>
+        <ul class="list">
+          <li><span class="dot"></span><span><strong id="freeLimit"></strong> AI messages per day</span></li>
+          <li><span class="dot"></span><span>Basic AI chat</span></li>
+          <li><span class="dot"></span><span>Limited tools</span></li>
+          <li><span class="dot"></span><span>Standard speed</span></li>
+        </ul>
+        <div class="card__bottom">
+          <button class="btn full" id="freeBtn" type="button" disabled>Current Plan</button>
+        </div>
+      </article>
+
+      <article class="card popular" aria-label="Pro plan">
+        <div class="ribbon">Most Popular</div>
+        <div class="card__top">
+          <div class="plan">Pro</div>
+          <div class="price">
+            <span class="price__amt" data-price="pro">$19</span>
+            <span class="price__per" data-per>/ mo</span>
+          </div>
+          <div class="hint">For daily power users.</div>
+        </div>
+        <ul class="list">
+          <li><span class="dot"></span><span><strong>Unlimited</strong> AI chats</span></li>
+          <li><span class="dot"></span><span>Faster responses</span></li>
+          <li><span class="dot"></span><span>File uploads</span></li>
+          <li><span class="dot"></span><span>Advanced AI tools</span></li>
+          <li><span class="dot"></span><span>Priority AI processing</span></li>
+        </ul>
+        <div class="card__bottom">
+          <button class="btn primary full" data-checkout="pro" type="button">Upgrade to Pro</button>
+        </div>
+      </article>
+
+      {# Ultimate plan removed: launch with Free + Pro only. #}
+    </section>
+
+    <section class="faq">
+      <div class="faq__card">
+        <h2>Secure billing with Stripe</h2>
+        <p>
+          Payments are handled by Stripe. You can upgrade, downgrade, cancel, or manage invoices anytime from the Billing Portal.
+        </p>
+      </div>
+      <div class="faq__card">
+        <h2>Yearly savings</h2>
+        <p>
+          Yearly billing saves 20% compared to paying monthly. Switch anytime.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title or "Lamp" }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand/ig_layout.css', v=static_v) }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand/nav.css', v=static_v) }}">
+  <script src="{{ url_for('static', filename='brand/nav.js', v=static_v) }}" defer></script>
+  <style>
+    .wrap {
+      max-width: 980px;
+      margin: 24px auto 80px;
+      padding: 0 16px;
+    }
+    .card {
+      background: var(--ig-surface);
+      border: 1px solid var(--ig-border);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.06);
+    }
+    .hero {
+      display: grid;
+      gap: 10px;
+      padding: 16px;
+      border-radius: 16px;
+      background:
+        radial-gradient(900px 240px at 10% 10%, rgba(255, 201, 74, 0.18), transparent 60%),
+        radial-gradient(900px 240px at 90% 0%, rgba(255, 183, 3, 0.14), transparent 60%),
+        linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.00));
+      border: 1px solid rgba(0, 0, 0, 0.06);
+    }
+    .t {
+      font-weight: 1100;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+    }
+    .p {
+      color: var(--ig-muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 12px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 0, 0, 0.10);
+      background: rgba(255, 255, 255, 0.9);
+      text-decoration: none;
+      color: #14110a;
+      font-weight: 1000;
+      cursor: pointer;
+    }
+    .btn.primary {
+      border: 0;
+      background: linear-gradient(140deg, rgba(255, 201, 74, 0.98), rgba(255, 183, 3, 0.98));
+    }
+    .btn.ghost {
+      background: rgba(255, 255, 255, 0.65);
+    }
+    .fine {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--ig-muted);
+      line-height: 1.45;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="hero">
+        <div class="t">Պետք է գրանցվել</div>
+        <div class="p">Guest հաշիվներով Account Settings-ը հասանելի չէ։ Գրանցվիր կամ մուտք գործիր, հետո նորից փորձիր։</div>
+      </div>
+
+      <div class="row">
+        <a class="btn ghost" href="/ai" data-nav>Back to Chat</a>
+        <form method="POST" action="/logout" style="margin:0">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="btn primary" type="submit">Log out and Register</button>
+        </form>
+      </div>
+
+      <div class="fine">Հուշում: log out-ից հետո կբացվի գրանցման/մուտքի էջը։</div>
+    </div>
+  </div>
+</body>
+</html>
+

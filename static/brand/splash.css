@@ -1,0 +1,185 @@
+/* Lamp splash intro: short logo + word reveal, then auto-fades out. */
+.lamp-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  /* Keep splash neutral (no colored glows behind the logo). */
+  background: linear-gradient(160deg, #0a0f16, #07090c);
+  color: rgba(255, 255, 255, 0.92);
+  overflow: hidden;
+  animation: lampSplashFade 2400ms ease forwards;
+}
+
+.lamp-splash__inner {
+  position: relative;
+  display: grid;
+  place-items: center;
+  gap: 14px;
+  padding: 28px 26px;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.22));
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+  animation: lampSplashCard 520ms cubic-bezier(.2, .95, .2, 1) both;
+}
+
+.lamp-splash__inner::before {
+  /* Removed: rainbow ring behind the logo. */
+  content: none;
+}
+
+.lamp-splash__inner::after {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.10), transparent 58%);
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.lamp-splash__logo {
+  width: 74px;
+  height: 74px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: transparent;
+  box-shadow: 0 20px 46px rgba(0, 0, 0, 0.35);
+  display: block;
+  object-fit: cover;
+  animation: lampSplashLogo 1000ms cubic-bezier(.2, .9, .2, 1) both;
+  z-index: 1;
+}
+
+.lamp-splash__word {
+  position: relative;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-size: clamp(44px, 9vw, 92px);
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow:
+    0 14px 44px rgba(0, 0, 0, 0.55),
+    0 0 0 rgba(0, 0, 0, 0);
+  clip-path: inset(0 100% 0 0);
+  animation: lampSplashWrite 860ms cubic-bezier(.2, .95, .2, 1) 240ms forwards;
+}
+
+.lamp-splash__word::after {
+  content: "";
+  position: absolute;
+  inset: -60% -30%;
+  background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.22), transparent 55%);
+  opacity: 0;
+  pointer-events: none;
+  animation: lampSplashGlow 1400ms ease 480ms forwards;
+}
+
+.lamp-splash__rule {
+  width: min(420px, 62vw);
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.42), transparent);
+  opacity: 0;
+  transform: scaleX(0.6);
+  animation: lampSplashRule 650ms ease 520ms forwards;
+}
+
+.lamp-splash__skip {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.24);
+  color: rgba(255, 255, 255, 0.88);
+  padding: 10px 12px;
+  cursor: pointer;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(8px);
+}
+
+.lamp-splash__skip:hover {
+  color: rgba(255, 255, 255, 1);
+  border-color: rgba(55, 151, 240, 0.62);
+}
+
+.lamp-splash--hidden {
+  animation: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+@keyframes lampSplashLogo {
+  0% { transform: translateY(8px) scale(0.92) rotate(-2deg); filter: saturate(1.05) brightness(0.98); }
+  60% { transform: translateY(0) scale(1.02) rotate(0deg); }
+  100% { transform: translateY(0) scale(1) rotate(0deg); filter: saturate(1.08) brightness(1.03); }
+}
+
+@keyframes lampSplashCard {
+  0% { opacity: 0; transform: translateY(10px) scale(0.98); filter: blur(0.6px); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+@keyframes lampSplashRing {
+  0% { transform: scale(0.86) rotate(-18deg); opacity: 0; }
+  55% { opacity: 0.92; }
+  100% { transform: scale(1) rotate(18deg); opacity: 0.92; }
+}
+
+@keyframes lampSplashWrite {
+  0% { clip-path: inset(0 100% 0 0); filter: blur(1px); }
+  100% { clip-path: inset(0 0 0 0); filter: blur(0); }
+}
+
+@keyframes lampSplashGlow {
+  0% { opacity: 0; transform: translateX(-8%) rotate(-6deg); }
+  35% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateX(10%) rotate(6deg); }
+}
+
+@keyframes lampSplashRule {
+  0% { opacity: 0; transform: scaleX(0.5); }
+  100% { opacity: 0.9; transform: scaleX(1); }
+}
+
+@keyframes lampSplashFade {
+  0% { opacity: 1; visibility: visible; pointer-events: auto; }
+  72% { opacity: 1; }
+  90% { opacity: 0; }
+  100% { opacity: 0; visibility: hidden; pointer-events: none; }
+}
+
+/* Light pages (IG theme) */
+body.ig-light .lamp-splash {
+  background: #fafafa;
+  color: #262626;
+}
+
+body.ig-light .lamp-splash__inner {
+  border-color: rgba(0, 0, 0, 0.10);
+  background: #ffffff;
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.12);
+}
+
+body.ig-light .lamp-splash__word {
+  color: #262626;
+  text-shadow: 0 14px 44px rgba(0, 0, 0, 0.12);
+}
+
+body.ig-light .lamp-splash__rule {
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.22), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lamp-splash { animation: none; opacity: 0; visibility: hidden; pointer-events: none; }
+  .lamp-splash__logo,
+  .lamp-splash__word,
+  .lamp-splash__rule { animation: none; }
+}

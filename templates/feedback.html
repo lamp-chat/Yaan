@@ -1,0 +1,372 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feedback - Lamp</title>
+  <script src="{{ url_for('static', filename='brand/i18n.js', v=static_v) }}" defer></script>
+  <meta name="robots" content="noindex, nofollow">
+  <style>
+    :root {
+      --bg0: #070708;
+      --bg1: #0b0b0c;
+      --text: rgba(251, 246, 232, 0.96);
+      --muted: rgba(214, 204, 176, 0.76);
+      --border: rgba(255, 201, 74, 0.18);
+      --panel: rgba(12, 12, 12, 0.78);
+      --panel2: rgba(18, 18, 18, 0.88);
+      --accent: #ffc94a;
+      --accent2: #ffb703;
+      --danger: rgba(255, 90, 90, 0.22);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(900px 620px at 12% 10%, rgba(255, 201, 74, 0.20) 0%, transparent 60%),
+        radial-gradient(820px 680px at 88% 90%, rgba(255, 183, 3, 0.10) 0%, transparent 60%),
+        radial-gradient(640px 420px at 62% 12%, rgba(255, 255, 255, 0.04) 0%, transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg0));
+    }
+
+    .wrap {
+      min-height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .shell {
+      width: min(980px, 100%);
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(12px);
+    }
+
+    .head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 18px 18px 16px;
+      border-bottom: 1px solid var(--border);
+      background:
+        linear-gradient(180deg, rgba(255, 201, 74, 0.10), transparent 62%),
+        radial-gradient(700px 240px at 8% 0%, rgba(255, 183, 3, 0.12), transparent 60%);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 201, 74, 0.35);
+      background: #ffc94a;
+      box-shadow: 0 14px 26px rgba(0, 0, 0, 0.28);
+    }
+
+    .title {
+      display: grid;
+      gap: 2px;
+    }
+
+    .title strong {
+      font-size: 16px;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .title span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      text-decoration: none;
+      color: var(--text);
+      background: rgba(10, 10, 10, 0.6);
+      font-weight: 650;
+    }
+
+    .btn.primary {
+      border: 0;
+      color: #14110a;
+      background: linear-gradient(140deg, var(--accent), var(--accent2));
+    }
+
+    .body {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 16px;
+      padding: 18px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--panel2);
+      padding: 16px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      letter-spacing: 0.02em;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .callout {
+      margin-top: 14px;
+      padding: 12px 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 201, 74, 0.26);
+      background: linear-gradient(135deg, rgba(255, 201, 74, 0.16), rgba(255, 183, 3, 0.10));
+      color: rgba(255, 246, 220, 0.96);
+      font-weight: 650;
+      letter-spacing: 0.2px;
+    }
+
+    .ok, .err {
+      margin: 0 0 12px;
+      padding: 10px 11px;
+      border-radius: 14px;
+      font-size: 14px;
+      border: 1px solid var(--border);
+    }
+
+    .ok {
+      background: rgba(34, 197, 94, 0.12);
+      border-color: rgba(34, 197, 94, 0.25);
+      color: rgba(220, 255, 233, 0.95);
+    }
+
+    .err {
+      background: var(--danger);
+      border-color: rgba(255, 90, 90, 0.35);
+      color: rgba(255, 224, 224, 0.95);
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 6px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255, 246, 220, 0.86);
+    }
+
+    select, input[type="email"], textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 12px;
+      background: rgba(10, 10, 10, 0.55);
+      color: var(--text);
+      outline: none;
+    }
+
+    textarea {
+      min-height: 140px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    select:focus, input[type="email"]:focus, textarea:focus {
+      border-color: rgba(255, 201, 74, 0.55);
+      box-shadow: 0 0 0 3px rgba(255, 201, 74, 0.16);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .rating {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 46px;
+      height: 36px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 201, 74, 0.35);
+      background: rgba(255, 201, 74, 0.10);
+      color: rgba(255, 246, 220, 0.96);
+      font-weight: 900;
+      letter-spacing: 0.04em;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    button[type="submit"] {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      color: #14110a;
+      background: linear-gradient(140deg, var(--accent), var(--accent2));
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+    }
+
+    @media (max-width: 900px) {
+      .body { grid-template-columns: 1fr; }
+      .row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <main class="shell">
+      <header class="head">
+        <div class="brand">
+          <img class="logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="Lamp logo">
+          <div class="title">
+            <strong>Lamp</strong>
+            <span>
+              {% if (display_name or username) %}
+                <span data-i18n="signed_in_as">Signed in as</span> {{ (display_name or username)|e }}
+              {% else %}
+                <span data-i18n="anonymous_feedback">Anonymous feedback</span>
+              {% endif %}
+            </span>
+          </div>
+        </div>
+        <nav class="nav">
+          <a class="btn" href="/" data-i18n="home">Home</a>
+          <a class="btn" href="/auth" data-i18n="sign_in">Sign in</a>
+          <a class="btn primary" href="/app" data-i18n="open_chat">Open chat</a>
+        </nav>
+      </header>
+
+      <section class="body">
+        <div class="card">
+          <h1 data-i18n="give_hard_feedback">Give hard feedback</h1>
+          <p data-i18n="feedback_desc_long">No sugarcoating. Tell us what confused you, what broke, what felt slow, and what you would change first.</p>
+          <div class="callout" data-i18n="feedback_callout">If something is bad, say it clearly. Specific beats polite.</div>
+        </div>
+
+        <div class="card">
+          {% if message %}
+            <div class="ok">{{ message }}</div>
+          {% endif %}
+          {% if error %}
+            <div class="err">{{ error }}</div>
+          {% endif %}
+
+          <form method="POST" action="/feedback">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div class="row">
+              <div>
+                <label for="category">Category</label>
+                <select id="category" name="category" required>
+                  <option value="">Choose...</option>
+                  <option value="bug">Bug / Broken</option>
+                  <option value="ux">UX / Confusing</option>
+                  <option value="performance">Performance</option>
+                  <option value="feature">Feature request</option>
+                  <option value="pricing">Pricing / Plans</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label for="contact_email">Contact email (optional)</label>
+                <input id="contact_email" name="contact_email" type="email" placeholder="you@example.com">
+              </div>
+            </div>
+
+            <label for="rating">Overall score (0-10)</label>
+            <div class="rating">
+              <input id="rating" name="rating" type="range" min="0" max="10" step="1" value="7">
+              <div class="pill" id="ratingValue">7</div>
+            </div>
+
+            <label for="message">Your feedback (be direct)</label>
+            <textarea id="message" name="message" placeholder="What should we fix first? What is the worst part? What is surprisingly good?" required></textarea>
+
+            <input type="hidden" id="page" name="page" value="">
+            <input type="hidden" id="tz" name="tz" value="">
+
+            <div class="foot">
+              <div class="small">We store this in our database for product improvement.</div>
+              <button type="submit">Send feedback</button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const rating = document.getElementById("rating");
+    const ratingValue = document.getElementById("ratingValue");
+    const page = document.getElementById("page");
+    const tz = document.getElementById("tz");
+    function getTZ() {
+      try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) { return ""; }
+    }
+    page.value = location.pathname + location.search;
+    tz.value = getTZ();
+    rating.addEventListener("input", () => { ratingValue.textContent = rating.value; });
+  </script>
+</body>
+</html>

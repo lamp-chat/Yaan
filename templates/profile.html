@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ profile.username }} - Lamp</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand/ig_layout.css', v=static_v) }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand/nav.css', v=static_v) }}">
+  <script src="{{ url_for('static', filename='brand/nav.js', v=static_v) }}" defer></script>
+  <style>
+    .profile {
+      display: grid;
+      grid-template-columns: 290px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .avatar-wrap {
+      display: grid;
+      place-items: center;
+      padding: 16px;
+    }
+
+    .avatar {
+      width: 170px;
+      height: 170px;
+      border-radius: 999px;
+      border: 1px solid var(--ig-border);
+      background: var(--ig-hover);
+      object-fit: cover;
+      display: block;
+    }
+
+    .avatar-empty {
+      width: 170px;
+      height: 170px;
+      border-radius: 999px;
+      border: 1px dashed var(--ig-border);
+      display: grid;
+      place-items: center;
+      color: var(--ig-muted);
+      font-weight: 900;
+    }
+
+    .head { padding: 18px 18px 0; }
+
+    .head__row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .username {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 0.01em;
+    }
+
+    .stats {
+      margin-top: 12px;
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      color: var(--ig-text);
+      font-size: 14px;
+    }
+
+    .stat b { font-weight: 1000; }
+
+    .bio {
+      margin-top: 12px;
+      color: var(--ig-muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .follow-btn {
+      min-width: 132px;
+    }
+
+    .hint {
+      padding: 14px 18px 18px;
+      color: var(--ig-muted);
+      font-size: 12px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      line-height: 1.5;
+    }
+
+    @media (max-width: 980px) {
+      .profile { grid-template-columns: 1fr; }
+      .avatar-wrap { padding-bottom: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header class="ig-topbar" role="banner">
+    <div class="ig-topbar__inner">
+      <a class="ig-brand" href="/app" data-nav aria-label="Lamp home">
+        <span class="ig-brand__word">Lamp</span>
+      </a>
+      <div class="ig-search">
+        <input id="globalSearchInput" class="ig-search__input" placeholder="Search users" aria-label="Search users" value="">
+      </div>
+      <nav class="ig-actions" aria-label="Navigation">
+        <a class="ig-ico" href="/app" data-nav title="Home" aria-label="Home"><span class="ig-ico__glyph">&#8962;</span></a>
+        <a class="ig-ico" href="/account" data-nav title="Account" aria-label="Account"><span class="ig-ico__glyph">&#9786;</span></a>
+        <a class="ig-ico" href="/settings" data-nav title="Settings" aria-label="Settings"><span class="ig-ico__glyph">&#9881;</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="ig-page">
+    <section class="ig-card">
+      <div class="profile">
+        <div class="avatar-wrap">
+          {% if profile.photo_path %}
+            <img class="avatar" src="{{ url_for('static', filename=profile.photo_path) }}" alt="Profile photo">
+          {% else %}
+            <div class="avatar-empty">No Photo</div>
+          {% endif %}
+        </div>
+
+        <div>
+          <div class="head">
+            <div class="head__row">
+              <div class="username">{{ profile.username }}</div>
+              <div class="actions">
+                {% if is_self %}
+                  <a class="ig-btn" href="/account" data-nav>Edit Profile</a>
+                {% else %}
+                  <button class="ig-btn primary follow-btn" id="followBtn" type="button"
+                          data-user-id="{{ profile.id }}"
+                          data-following="{{ '1' if is_following else '0' }}">
+                    {{ 'Following' if is_following else 'Follow' }}
+                  </button>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="bio">
+              <div style="color: var(--ig-text); font-weight: 900;">{{ profile.username }}</div>
+              <div>Direct messages and calls inside Lamp.</div>
+            </div>
+          </div>
+
+          <div class="hint">
+            Tip: use Search to find people, then Follow to build your network.
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const inp = document.getElementById("globalSearchInput");
+      if (inp) {
+        inp.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            const q = (inp.value || "").trim();
+            window.location.href = "/search?q=" + encodeURIComponent(q);
+          }
+        });
+      }
+
+      const btn = document.getElementById("followBtn");
+      if (!btn) return;
+      const followersEl = document.getElementById("followersCount");
+
+      async function post(url, payload) {
+        const res = await fetch(url, {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload || {}),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || "Request failed");
+        return data;
+      }
+
+      function setState(isFollowing) {
+        btn.dataset.following = isFollowing ? "1" : "0";
+        btn.textContent = isFollowing ? "Following" : "Follow";
+        btn.classList.toggle("primary", !isFollowing);
+      }
+
+      btn.addEventListener("click", async () => {
+        const userId = Number(btn.dataset.userId || "0") || 0;
+        const isFollowing = btn.dataset.following === "1";
+        btn.disabled = true;
+        try {
+          const data = await post(isFollowing ? "/api/unfollow" : "/api/follow", { user_id: userId });
+          setState(!!data.is_following);
+          if (followersEl && data.counts && typeof data.counts.followers !== "undefined") {
+            followersEl.textContent = String(data.counts.followers);
+          }
+        } catch (e) {
+          alert(e.message || "Failed");
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+/* Simple, app-like page transition for internal navigation. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(900px 620px at 18% 12%, rgba(255, 201, 74, 0.10) 0%, transparent 58%),
+    radial-gradient(900px 680px at 86% 92%, rgba(255, 183, 3, 0.08) 0%, transparent 60%),
+    linear-gradient(160deg, rgba(11, 11, 12, 0.92), rgba(7, 7, 8, 0.92));
+  transition: opacity 180ms ease;
+  z-index: 9997;
+}
+
+html.nav-leave body::before {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { transition: none; }
+}
+

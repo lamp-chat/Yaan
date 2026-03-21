@@ -1,0 +1,12 @@
+Flask>=2.3
+Authlib>=1.2
+openai>=1.0
+Werkzeug>=2.3
+firebase-admin>=6.5
+
+# Realtime messaging + WebRTC signaling transport
+Flask-SocketIO>=5.3
+simple-websocket>=1.0
+
+# Billing (optional in dev; required for Upgrade page checkout)
+stripe>=8.0

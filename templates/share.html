@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }} · Lamp</title>
+  <style>
+    :root {
+      --bg0: #0b0d12;
+      --bg1: #0f1320;
+      --panel: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.10);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.62);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      font-family: "Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: linear-gradient(160deg, var(--bg1), var(--bg0));
+      color: var(--text);
+    }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 22px 16px 32px; }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(0,0,0,0.18);
+      backdrop-filter: blur(10px);
+    }
+    .brand { display: flex; gap: 12px; align-items: center; }
+    .logo { width: 34px; height: 34px; border-radius: 14px; border: 1px solid var(--border); object-fit: cover; }
+    .title { font-weight: 900; letter-spacing: 0.01em; }
+    .meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .btn {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      padding: 10px 12px;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 800;
+    }
+    .thread { margin-top: 14px; display: grid; gap: 12px; }
+    .msg { display: grid; gap: 8px; }
+    .bubble {
+      border-radius: 18px;
+      padding: 12px 12px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.22);
+    }
+    .meta2 { font-size: 11px; color: rgba(255,255,255,0.48); padding: 0 6px; }
+    .md { font-size: 14px; line-height: 1.55; }
+    .md p { margin: 0 0 10px; }
+    .md p:last-child { margin-bottom: 0; }
+    .md code {
+      font-family: var(--mono);
+      font-size: 0.92em;
+      padding: 2px 6px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+    .md pre {
+      margin: 10px 0;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.40);
+    }
+    .md pre code {
+      display: block;
+      padding: 12px 12px;
+      background: transparent;
+      border: 0;
+      white-space: pre;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div class="brand">
+        <img class="logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="Lamp">
+        <div>
+          <div class="title">{{ title }}</div>
+          <div class="meta">Shared conversation · read-only</div>
+        </div>
+      </div>
+      <a class="btn" href="/auth">Open Lamp</a>
+    </header>
+
+    <section class="thread" id="thread"></section>
+  </div>
+
+  <script>
+    const MESSAGES = {{ messages|tojson }};
+    function escapeHtml(s) {
+      return (s || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+    function renderMarkdown(md) {
+      const src = (md || "").replace(/\\r\\n/g, "\\n");
+      const parts = src.split(/```/);
+      let html = "";
+      for (let i = 0; i < parts.length; i++) {
+        if (i % 2 === 1) {
+          const block = parts[i];
+          const nl = block.indexOf("\\n");
+          let code = block;
+          if (nl !== -1) code = block.slice(nl + 1);
+          html += `<pre><code>${escapeHtml(code)}</code></pre>`;
+          continue;
+        }
+        let t = escapeHtml(parts[i]);
+        t = t.replace(/`([^`]+)`/g, "<code>$1</code>");
+        const lines = t.split("\\n");
+        for (const line of lines) {
+          if (line.trim() === "") html += "<p></p>";
+          else html += `<p>${line}</p>`;
+        }
+      }
+      return html;
+    }
+    function fmtTime(iso) {
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return "";
+      return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+    const thread = document.getElementById("thread");
+    for (const m of MESSAGES) {
+      const wrap = document.createElement("div");
+      wrap.className = "msg";
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      const md = document.createElement("div");
+      md.className = "md";
+      md.innerHTML = renderMarkdown(m.content || "");
+      bubble.appendChild(md);
+      const meta = document.createElement("div");
+      meta.className = "meta2";
+      meta.textContent = `${m.role === "user" ? "User" : "Lamp"} · ${fmtTime(m.created_at_utc)}`;
+      wrap.appendChild(bubble);
+      wrap.appendChild(meta);
+      thread.appendChild(wrap);
+    }
+  </script>
+</body>
+</html>
+

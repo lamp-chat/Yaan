@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account - Lamp</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand/ig_layout.css', v=static_v) }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand/nav.css', v=static_v) }}">
+  <script src="{{ url_for('static', filename='brand/nav.js', v=static_v) }}" defer></script>
+  <script src="{{ url_for('static', filename='brand/i18n.js', v=static_v) }}" defer></script>
+
+  <style>
+    :root {
+      --ig-bg: #f6f7fb;
+      --ig-surface: rgba(255,255,255,0.86);
+      --ig-text: #0b1220;
+      --ig-muted: rgba(11, 18, 32, 0.58);
+      --ig-border: rgba(11, 18, 32, 0.12);
+      --ig-hover: rgba(11, 18, 32, 0.06);
+      --ig-search: rgba(11, 18, 32, 0.06);
+      --ig-blue: #ffb703;
+      --ig-blue2: #ffc94a;
+      --ig-shadow: 0 18px 46px rgba(2, 8, 20, 0.12);
+    }
+
+    body {
+      background:
+        radial-gradient(1100px 760px at 14% 14%, rgba(45, 125, 255, 0.12), transparent 60%),
+        radial-gradient(900px 680px at 86% 86%, rgba(255, 204, 90, 0.12), transparent 62%),
+        linear-gradient(180deg, #f8f9fd, var(--ig-bg));
+    }
+
+    .ig-card {
+      box-shadow: var(--ig-shadow);
+      border-radius: 16px;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .wrap {
+      display: grid;
+      grid-template-columns: 310px 1fr;
+      gap: 28px;
+      padding: 18px;
+      align-items: start;
+    }
+
+    .side {
+      display: grid;
+      gap: 14px;
+      padding: 12px;
+      border: 1px solid var(--ig-border);
+      border-radius: 16px;
+      background: rgba(255,255,255,0.72);
+    }
+
+    .avatar {
+      width: 170px;
+      height: 170px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      margin: 6px auto 0;
+      background:
+        radial-gradient(circle at 30% 20%, rgba(90,162,255,0.40), transparent 55%),
+        radial-gradient(circle at 70% 80%, rgba(255,204,90,0.30), transparent 60%),
+        rgba(11, 18, 32, 0.05);
+      border: 1px solid rgba(11, 18, 32, 0.10);
+      box-shadow: 0 18px 40px rgba(2, 8, 20, 0.12);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .avatar .empty {
+      color: rgba(11, 18, 32, 0.45);
+      font-weight: 1000;
+      letter-spacing: 0.02em;
+    }
+
+    .side__meta {
+      display: grid;
+      gap: 6px;
+      text-align: center;
+      padding: 2px 6px 8px;
+    }
+
+    .name {
+      font-weight: 1000;
+      font-size: 18px;
+      letter-spacing: 0.01em;
+      overflow-wrap: anywhere;
+    }
+
+    .email {
+      color: var(--ig-muted);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 4px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 8px 10px;
+      border: 1px solid rgba(11,18,32,0.10);
+      background: rgba(255,255,255,0.70);
+      color: rgba(11,18,32,0.80);
+      font-weight: 950;
+      font-size: 12px;
+    }
+
+    .chip b { font-weight: 1000; color: rgba(11,18,32,0.92); }
+
+    .side__cta {
+      display: grid;
+      gap: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--ig-border);
+    }
+
+    .btnrow {
+      display: grid;
+      gap: 10px;
+    }
+
+    .btnwide { width: 100%; }
+
+    .ico {
+      width: 18px;
+      height: 18px;
+      display: inline-block;
+      flex: 0 0 auto;
+    }
+
+    .main {
+      border: 1px solid var(--ig-border);
+      border-radius: 16px;
+      background: rgba(255,255,255,0.72);
+      overflow: hidden;
+    }
+
+    .head {
+      padding: 18px 18px 12px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--ig-border);
+      background:
+        radial-gradient(900px 180px at 20% 0%, rgba(45, 125, 255, 0.10), transparent 60%),
+        radial-gradient(820px 200px at 85% 30%, rgba(255, 204, 90, 0.10), transparent 62%),
+        rgba(255,255,255,0.70);
+    }
+
+    .head__title {
+      display: grid;
+      gap: 4px;
+    }
+
+    .head__title h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 1000;
+      letter-spacing: 0.01em;
+    }
+
+    .head__title p {
+      margin: 0;
+      color: var(--ig-muted);
+      font-size: 13px;
+      line-height: 1.35;
+      max-width: 70ch;
+    }
+
+    .tabs {
+      padding: 0 10px;
+      display: flex;
+      gap: 6px;
+      border-bottom: 1px solid var(--ig-border);
+      background: rgba(255,255,255,0.72);
+    }
+
+    .tab {
+      appearance: none;
+      border: 1px solid transparent;
+      background: transparent;
+      color: rgba(11,18,32,0.68);
+      font-weight: 1000;
+      padding: 12px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+    }
+
+    .tab:hover { transform: translateY(-1px); background: rgba(11,18,32,0.04); }
+    .tab[aria-selected="true"] {
+      background: rgba(45,125,255,0.10);
+      border-color: rgba(45,125,255,0.16);
+      color: rgba(11,18,32,0.92);
+    }
+
+    .pane {
+      padding: 16px 18px 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .pane[hidden] { display: none; }
+
+    .flash { display: grid; gap: 10px; }
+    .notice {
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-weight: 900;
+      font-size: 13px;
+      border: 1px solid rgba(11,18,32,0.12);
+      background: rgba(255,255,255,0.72);
+    }
+    .notice.err { border-color: rgba(237, 73, 86, 0.30); background: rgba(237, 73, 86, 0.10); }
+    .notice.ok { border-color: rgba(46, 204, 113, 0.28); background: rgba(46, 204, 113, 0.10); }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: rgba(11, 18, 32, 0.55);
+      font-weight: 950;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid rgba(11,18,32,0.14);
+      border-radius: 12px;
+      padding: 11px 12px;
+      font-size: 14px;
+      outline: none;
+      background: rgba(255,255,255,0.82);
+      color: var(--ig-text);
+      transition: box-shadow 140ms ease, border-color 140ms ease;
+    }
+
+    textarea { min-height: 104px; resize: vertical; }
+    input:focus, textarea:focus { box-shadow: 0 0 0 3px rgba(45, 125, 255, 0.16); border-color: rgba(45, 125, 255, 0.34); }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 180px;
+      gap: 10px;
+    }
+
+    .note {
+      color: var(--ig-muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .file {
+      display: grid;
+      gap: 8px;
+    }
+
+    .file__row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border: 1px solid rgba(11,18,32,0.14);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,0.82);
+    }
+
+    .file__name {
+      color: rgba(11,18,32,0.72);
+      font-weight: 900;
+      font-size: 13px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .formActions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      padding-top: 6px;
+    }
+
+    .danger {
+      border-color: rgba(237, 73, 86, 0.35);
+      color: rgb(237, 73, 86);
+    }
+
+    .sessionGrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .kv {
+      border: 1px solid rgba(11,18,32,0.12);
+      background: rgba(255,255,255,0.78);
+      border-radius: 14px;
+      padding: 12px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .kv .k {
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(11,18,32,0.55);
+    }
+
+    .kv .v {
+      font-weight: 900;
+      color: rgba(11,18,32,0.92);
+      overflow-wrap: anywhere;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      padding: 1px 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(11,18,32,0.12);
+      background: rgba(11,18,32,0.04);
+      color: rgba(11,18,32,0.85);
+    }
+
+    @media (max-width: 980px) {
+      .wrap { grid-template-columns: 1fr; }
+      .row { grid-template-columns: 1fr; }
+      .sessionGrid { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .ig-card { animation: rise 520ms ease both; }
+      @keyframes rise {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .pane.enter { animation: paneIn 360ms ease both; }
+      @keyframes paneIn {
+        from { opacity: 0; transform: translateY(6px); filter: blur(2px); }
+        to { opacity: 1; transform: translateY(0); filter: blur(0); }
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="ig-topbar" role="banner">
+    <div class="ig-topbar__inner">
+      <a class="ig-brand" href="/" data-nav aria-label="Lamp home">
+        <span class="ig-brand__word">Lamp</span>
+      </a>
+      <div class="ig-search">
+        <input class="ig-search__input" data-i18n-placeholder="search" placeholder="Search" data-i18n-aria-label="search" aria-label="Search">
+      </div>
+      <nav class="ig-actions" aria-label="Navigation">
+        <a class="ig-ico" href="/" data-nav title="Home" aria-label="Home"><span class="ig-ico__glyph">&#8962;</span></a>
+        <a class="ig-ico active" href="/account" data-nav data-i18n-title="account" title="Account" data-i18n-aria-label="account" aria-label="Account"><span class="ig-ico__glyph">&#9786;</span></a>
+        <a class="ig-ico" href="/settings" data-nav data-i18n-title="settings" title="Settings" data-i18n-aria-label="settings" aria-label="Settings"><span class="ig-ico__glyph">&#9881;</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="ig-page">
+    <section class="ig-card">
+      <div class="wrap">
+        <aside class="side" aria-label="Profile sidebar">
+          <div class="avatar" aria-label="Profile photo preview">
+            {% if profile.photo_path %}
+              <img id="avatarImg" src="{{ url_for('static', filename=profile.photo_path) }}" alt="Profile photo">
+            {% else %}
+              <div class="empty" id="avatarEmpty" data-i18n="no_photo_yet">No photo yet</div>
+              <img id="avatarImg" alt="Profile photo" hidden>
+            {% endif %}
+          </div>
+
+          <div class="side__meta">
+            <div class="name">{{ display_name or profile.username }}</div>
+          </div>
+
+          <div class="side__cta">
+            <div class="note">This is the name shown across the app. Your public username can be edited in “Edit profile”.</div>
+            <div class="chips" aria-label="Plan and usage">
+              <div class="chip"><b>Plan</b> {{ (billing.plan or "free")|upper }}</div>
+              {% if (billing.plan or "free")|lower == "free" and (billing.free_daily_limit or 0) > 0 %}
+                <div class="chip"><b>Usage</b> {{ billing.messages_used_today or 0 }} / {{ billing.free_daily_limit }} today</div>
+              {% elif billing.subscription_status %}
+                <div class="chip"><b>Status</b> {{ billing.subscription_status }}</div>
+              {% endif %}
+            </div>
+            <div class="btnrow">
+              <a class="ig-btn primary btnwide" href="/app" data-nav>
+                <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-5 3v-3H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>
+                <span data-i18n="ai_chat">AI Chat</span>
+              </a>
+              <a class="ig-btn btnwide" href="/upgrade" data-nav>
+                <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2l3 7h7l-5.6 4.1L18.6 22 12 17.9 5.4 22l2.2-8.9L2 9h7l3-7z"/></svg>
+                <span>Upgrade</span>
+              </a>
+              <a class="ig-btn btnwide" href="/settings" data-nav>
+                <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.7 7.7 0 0 0 .1-1l2-1.6-2-3.4-2.4 1a8.7 8.7 0 0 0-1.7-1l-.4-2.6H9.4L9 7a8.7 8.7 0 0 0-1.7 1l-2.4-1-2 3.4L4.9 12a7.7 7.7 0 0 0 .1 1L2.9 14.6l2 3.4 2.4-1a8.7 8.7 0 0 0 1.7 1l.4 2.6h5.2l.4-2.6a8.7 8.7 0 0 0 1.7-1l2.4 1 2-3.4L19.4 13zM12 15.5A3.5 3.5 0 1 1 15.5 12 3.5 3.5 0 0 1 12 15.5z"/></svg>
+                <span data-i18n="settings">Settings</span>
+              </a>
+            </div>
+          </div>
+        </aside>
+
+        <section class="main" aria-label="Account content">
+          <div class="head">
+            <div class="head__title">
+              <h1 data-i18n="account_center">Account Center</h1>
+              <p>Update your profile details and photo. Changes are saved to your local profile; authentication is handled by Firebase.</p>
+            </div>
+          </div>
+
+          <div class="tabs" role="tablist" aria-label="Account sections">
+            <button class="tab" id="tabEdit" role="tab" aria-controls="paneEdit" aria-selected="true" type="button" data-i18n="edit_profile">Edit profile</button>
+            <button class="tab" id="tabEmail" role="tab" aria-controls="paneEmail" aria-selected="false" type="button" data-i18n="email_tab">Email</button>
+            <button class="tab" id="tabSession" role="tab" aria-controls="paneSession" aria-selected="false" type="button" data-i18n="session_tab">Session</button>
+          </div>
+
+          <div id="paneEdit" class="pane enter" role="tabpanel" aria-labelledby="tabEdit">
+            <div id="flash" class="flash" aria-live="polite">
+              {% if message %}<div class="notice ok">{{ message }}</div>{% endif %}
+              {% if error %}<div class="notice err">{{ error }}</div>{% endif %}
+            </div>
+
+            <form id="profileForm" method="POST" action="/account/update" enctype="multipart/form-data">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+              <div class="file">
+                <label for="photo" data-i18n="profile_photo">Profile photo</label>
+                <input id="photo" name="photo" type="file" accept=".png,.jpg,.jpeg,.gif,.webp" hidden>
+                <div class="file__row">
+                  <div class="file__name" id="photoName" data-i18n="no_file_chosen">No file chosen</div>
+                  <button class="ig-btn" id="pickPhotoBtn" type="button" data-i18n="choose_file">Choose file</button>
+                </div>
+                <div class="note">PNG/JPG/JPEG/GIF/WEBP. Large images will be resized.</div>
+              </div>
+
+              <div>
+                <label for="username" data-i18n="username_label">Username</label>
+                <input id="username" name="username" minlength="3" required value="{{ profile.username }}">
+              </div>
+
+              <div class="row">
+                <div>
+                  <label for="age" data-i18n="age_label">Age</label>
+                  <input id="age" name="age" type="number" min="0" max="120" value="{{ profile.age }}">
+                </div>
+                <div>
+                  <label for="tz" data-i18n="timezone_label">Timezone</label>
+                  <input id="tz" value="{{ profile.tz }}" disabled>
+                  <div class="note">This is optional and managed in Settings.</div>
+                </div>
+              </div>
+
+              <div>
+                <label for="address" data-i18n="address_label">Address</label>
+                <textarea id="address" name="address">{{ profile.address }}</textarea>
+              </div>
+
+              <div class="formActions">
+                <button class="ig-btn primary" type="submit">
+                  <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M5 21h14a2 2 0 0 0 2-2V8.4a2 2 0 0 0-.6-1.4l-2.4-2.4A2 2 0 0 0 16.6 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2zm2-15h8v4H7V6zm0 7h10v6H7v-6z"/></svg>
+                  <span data-i18n="save">Save</span>
+                </button>
+                <button class="ig-btn" type="submit" form="addAccountForm">
+                  <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 12a4.2 4.2 0 1 0-4.2-4.2A4.2 4.2 0 0 0 12 12zm0 2c-4.4 0-8 2.3-8 5.1A1.9 1.9 0 0 0 5.9 21H18.1A1.9 1.9 0 0 0 20 19.1C20 16.3 16.4 14 12 14zm7-7h-2V5a1 1 0 0 0-2 0v2h-2a1 1 0 0 0 0 2h2v2a1 1 0 0 0 2 0V9h2a1 1 0 0 0 0-2z"/></svg>
+                  <span data-i18n="add_account">Add account</span>
+                </button>
+                <a class="ig-btn" href="/settings" data-nav>
+                  <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.7 7.7 0 0 0 .1-1l2-1.6-2-3.4-2.4 1a8.7 8.7 0 0 0-1.7-1l-.4-2.6H9.4L9 7a8.7 8.7 0 0 0-1.7 1l-2.4-1-2 3.4L4.9 12a7.7 7.7 0 0 0 .1 1L2.9 14.6l2 3.4 2.4-1a8.7 8.7 0 0 0 1.7 1l.4 2.6h5.2l.4-2.6a8.7 8.7 0 0 0 1.7-1l2.4 1 2-3.4L19.4 13zM12 15.5A3.5 3.5 0 1 1 15.5 12 3.5 3.5 0 0 1 12 15.5z"/></svg>
+                  <span>Settings</span>
+                </a>
+              </div>
+            </form>
+
+            <div style="padding-top: 10px; border-top: 1px solid var(--ig-border);">
+              <div style="font-weight:1000; margin-bottom: 6px;" data-i18n="password_section">Password</div>
+              <div class="note" data-i18n="password_note">Password reset/change is managed by Firebase (use the login screen).</div>
+            </div>
+
+            <form id="addAccountForm" method="POST" action="/account/add-account">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            </form>
+          </div>
+
+          <div id="paneEmail" class="pane" role="tabpanel" aria-labelledby="tabEmail" hidden>
+            <div class="flash" aria-live="polite">
+              <div class="note" data-i18n="email_note">Your Firebase sign-in email is managed by Firebase. This section lets you store a contact email locally and request a password reset.</div>
+            </div>
+
+            <form id="emailForm" method="POST" action="/account/update">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <div>
+                <label for="email" data-i18n="email">Email</label>
+                <input id="email" name="email" type="email" value="{{ profile.email }}" placeholder="you@example.com">
+                <div class="note" data-i18n="email_empty_note">If you used phone/guest sign-in, this can be empty.</div>
+              </div>
+              <div class="formActions">
+                <button class="ig-btn primary" type="submit">
+                  <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M5 21h14a2 2 0 0 0 2-2V8.4a2 2 0 0 0-.6-1.4l-2.4-2.4A2 2 0 0 0 16.6 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2zm2-15h8v4H7V6zm0 7h10v6H7v-6z"/></svg>
+                  <span data-i18n="save_email">Save email</span>
+                </button>
+              </div>
+            </form>
+
+            <div style="padding-top: 10px; border-top: 1px solid var(--ig-border);">
+              <div style="font-weight:1000; margin-bottom: 6px;" data-i18n="reset_password">Reset password</div>
+              <div class="note" data-i18n="reset_pw_note">This sends a Firebase password reset email. Works only for Email/Password accounts.</div>
+              <div class="formActions">
+                <button class="ig-btn" id="resetPwBtn" type="button">
+                  <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 6a6 6 0 0 1 5.7 8H20a1 1 0 1 1 0 2h-3.7a1 1 0 0 1-1-1V11a1 1 0 1 1 2 0v1.1A4 4 0 1 0 12 16a1 1 0 1 1 0 2 6 6 0 0 1 0-12z"/></svg>
+                  <span data-i18n="send_reset_email">Send reset email</span>
+                </button>
+                <div class="note" id="resetPwHint" style="margin-top:6px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="paneSession" class="pane" role="tabpanel" aria-labelledby="tabSession" hidden>
+            <div class="sessionGrid">
+              <div class="kv">
+                <div class="k" data-i18n="firebase_uid">Firebase UID</div>
+                <div class="v">{{ session.get('firebase_uid', '') }}</div>
+              </div>
+              <div class="kv">
+                <div class="k" data-i18n="provider">Provider</div>
+                <div class="v">{{ session.get('sign_in_provider', '') }}</div>
+              </div>
+              <div class="kv">
+                <div class="k" data-i18n="guest">Guest</div>
+                <div class="v">{% if session.get('is_guest') %}<span data-i18n="yes">yes</span>{% else %}<span data-i18n="no">no</span>{% endif %}</div>
+              </div>
+            </div>
+            <div class="note"><span data-i18n="session_fix_note">If something looks wrong here, log out and sign in again from /auth.</span></div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    window.__FIREBASE_CONFIG__ = {{ (firebase_config or {})|tojson }};
+  </script>
+  <script>
+    (function () {
+      const inp = document.querySelector(".ig-search__input");
+      if (inp) {
+        inp.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            const q = (inp.value || "").trim();
+            window.location.href = "/search?q=" + encodeURIComponent(q);
+          }
+        });
+      }
+
+      const tabEdit = document.getElementById("tabEdit");
+      const tabEmail = document.getElementById("tabEmail");
+      const tabSession = document.getElementById("tabSession");
+      const paneEdit = document.getElementById("paneEdit");
+      const paneEmail = document.getElementById("paneEmail");
+      const paneSession = document.getElementById("paneSession");
+
+      function setSel(tab, v) {
+        if (!tab) return;
+        tab.setAttribute("aria-selected", v ? "true" : "false");
+      }
+
+      function show(pane) {
+        [paneEdit, paneEmail, paneSession].forEach((p) => {
+          if (!p) return;
+          if (p === pane) {
+            p.removeAttribute("hidden");
+            try {
+              p.classList.remove("enter");
+              void p.offsetWidth;
+              p.classList.add("enter");
+            } catch (e) {}
+          } else {
+            p.setAttribute("hidden", "hidden");
+          }
+        });
+      }
+
+      if (tabEdit) tabEdit.addEventListener("click", () => { setSel(tabEdit, true); setSel(tabEmail, false); setSel(tabSession, false); show(paneEdit); });
+      if (tabEmail) tabEmail.addEventListener("click", () => { setSel(tabEdit, false); setSel(tabEmail, true); setSel(tabSession, false); show(paneEmail); });
+      if (tabSession) tabSession.addEventListener("click", () => { setSel(tabEdit, false); setSel(tabEmail, false); setSel(tabSession, true); show(paneSession); });
+
+      const photo = document.getElementById("photo");
+      const pickPhotoBtn = document.getElementById("pickPhotoBtn");
+      const photoName = document.getElementById("photoName");
+      const avatarImg = document.getElementById("avatarImg");
+      const avatarEmpty = document.getElementById("avatarEmpty");
+
+      if (pickPhotoBtn && photo) {
+        pickPhotoBtn.addEventListener("click", () => photo.click());
+      }
+
+      function setPhotoLabel(name) {
+        if (!photoName) return;
+        photoName.textContent = name || "No file chosen";
+      }
+
+      if (photo) {
+        photo.addEventListener("change", () => {
+          const f = (photo.files && photo.files[0]) ? photo.files[0] : null;
+          setPhotoLabel(f ? f.name : "");
+          if (f && avatarImg) {
+            const url = URL.createObjectURL(f);
+            avatarImg.src = url;
+            avatarImg.removeAttribute("hidden");
+            if (avatarEmpty) avatarEmpty.setAttribute("hidden", "hidden");
+          }
+        });
+      }
+    })();
+  </script>
+
+  <script type="module">
+    import { getApp, getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+    const cfg = window.__FIREBASE_CONFIG__ || {};
+    const btn = document.getElementById("resetPwBtn");
+    const hint = document.getElementById("resetPwHint");
+    const emailInput = document.getElementById("email");
+
+    function setHint(t, kind) {
+      if (!hint) return;
+      hint.textContent = t || "";
+      hint.style.color = (kind === "ok") ? "rgba(46, 204, 113, 0.95)" : (kind === "err") ? "rgba(237, 73, 86, 0.95)" : "";
+    }
+
+    function canInit() {
+      return cfg && cfg.apiKey && cfg.authDomain && cfg.projectId;
+    }
+
+    if (!btn) {
+      // page doesn't include the button in some variants
+    } else if (!canInit()) {
+      btn.disabled = true;
+      setHint("Firebase web config is missing; cannot send reset email.", "err");
+    } else {
+      btn.addEventListener("click", async () => {
+        const email = String((emailInput && emailInput.value) || "").trim();
+        if (!email) { setHint("Enter an email above first.", "err"); return; }
+        btn.disabled = true;
+        setHint("Sending...", "");
+        try {
+          const app = getApps().length ? getApp() : initializeApp(cfg);
+          const auth = getAuth(app);
+          await sendPasswordResetEmail(auth, email);
+          setHint("Password reset email sent.", "ok");
+        } catch (e) {
+          setHint((e && e.message) ? String(e.message) : "Failed to send reset email.", "err");
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    }
+  </script>
+</body>
+</html>

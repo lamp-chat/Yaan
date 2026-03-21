@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome - Lamp</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand/nav.css', v=static_v) }}">
+  <script src="{{ url_for('static', filename='brand/nav.js', v=static_v) }}" defer></script>
+  <script src="{{ url_for('static', filename='brand/i18n.js', v=static_v) }}" defer></script>
+
+  <style>
+    :root {
+      --bg0: #06080c;
+      --bg1: #0a101a;
+      --bg2: #0d1624;
+      --text: rgba(255, 255, 255, 0.92);
+      --muted: rgba(255, 255, 255, 0.62);
+      --border: rgba(255, 255, 255, 0.11);
+      --panel: rgba(14, 18, 28, 0.78);
+      --panel2: rgba(14, 18, 28, 0.46);
+      --blue: #2d7dff;
+      --blue2: #5aa2ff;
+      --gold: #ffcc5a;
+      --shadow: 0 30px 80px rgba(0, 0, 0, 0.60);
+      --shadow2: 0 12px 34px rgba(0, 0, 0, 0.45);
+      --r: 18px;
+      --r2: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      font-family: "Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background:
+        radial-gradient(1100px 780px at 14% 12%, rgba(45, 125, 255, 0.20), transparent 60%),
+        radial-gradient(900px 680px at 86% 88%, rgba(255, 204, 90, 0.14), transparent 62%),
+        linear-gradient(165deg, var(--bg2), var(--bg0));
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: -20%;
+      background:
+        radial-gradient(800px 520px at 20% 30%, rgba(45,125,255,0.12), transparent 55%),
+        radial-gradient(700px 540px at 70% 65%, rgba(255,204,90,0.10), transparent 60%),
+        radial-gradient(560px 420px at 55% 15%, rgba(90,162,255,0.08), transparent 58%);
+      filter: blur(1px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.8;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: 1fr auto;
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: 1fr 480px;
+      align-items: stretch;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .left {
+      position: relative;
+      padding: 28px 32px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      border-right: 1px solid var(--border);
+    }
+
+    .left::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(900px 520px at 28% 26%, rgba(45, 125, 255, 0.14), transparent 60%),
+        radial-gradient(620px 480px at 72% 72%, rgba(255, 204, 90, 0.10), transparent 62%);
+      pointer-events: none;
+      opacity: 0.9;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+      width: fit-content;
+      position: relative;
+      z-index: 1;
+    }
+
+    .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: radial-gradient(circle at 30% 20%, #ffe8a8, #ffc94a 55%, #ffb703);
+      border: 1px solid rgba(255, 201, 74, 0.26);
+      box-shadow: 0 20px 44px rgba(0, 0, 0, 0.35);
+      object-fit: cover;
+      display: block;
+    }
+
+    .word {
+      font-weight: 1000;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.92);
+    }
+
+    .hero {
+      display: grid;
+      place-items: center;
+      padding: 16px 10px 28px;
+    }
+
+    .hero__inner {
+      width: min(720px, 100%);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      gap: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.80);
+      font-weight: 950;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+
+    .kicker .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 99px;
+      background: radial-gradient(circle at 30% 30%, #ffffff, var(--blue2) 55%, var(--blue));
+      box-shadow: 0 0 0 6px rgba(45, 125, 255, 0.12);
+    }
+
+    .title {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 700;
+      font-size: clamp(34px, 4.2vw, 56px);
+      line-height: 1.12;
+      letter-spacing: 0.01em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      max-width: 56ch;
+    }
+
+    .bullets {
+      margin: 8px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 10px;
+      max-width: 62ch;
+    }
+
+    .bullets li {
+      display: grid;
+      grid-template-columns: 18px 1fr;
+      gap: 10px;
+      align-items: start;
+      text-align: left;
+      color: rgba(255,255,255,0.84);
+      background: rgba(0, 0, 0, 0.16);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 12px;
+      border-radius: 14px;
+    }
+
+    .bullets .mark {
+      width: 18px;
+      height: 18px;
+      border-radius: 8px;
+      background: rgba(45, 125, 255, 0.16);
+      border: 1px solid rgba(45, 125, 255, 0.28);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.30);
+      display: grid;
+      place-items: center;
+      margin-top: 1px;
+    }
+
+    .bullets .mark::after {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 3px;
+      background: rgba(90, 162, 255, 0.95);
+    }
+
+    .right {
+      padding: 26px 20px;
+      background: rgba(5, 8, 12, 0.34);
+      display: grid;
+      align-content: start;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    .panel h2 { margin: 0 0 8px; font-size: 18px; letter-spacing: 0.01em; }
+    .tag { margin: 0 0 12px; color: var(--muted); font-size: 13px; line-height: 1.4; }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 10px 0 6px;
+    }
+
+    .field {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 12px;
+      background: rgba(6, 10, 16, 0.55);
+      color: var(--text);
+      outline: none;
+    }
+
+    .field:focus { box-shadow: 0 0 0 3px rgba(45, 125, 255, 0.18); }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .row1 { display: grid; grid-template-columns: 1fr; gap: 10px; }
+
+    .pw-wrap { position: relative; }
+    .pw-toggle {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.85);
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .pw-toggle:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .btn {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+    }
+
+    .btn.primary {
+      border-color: rgba(90, 162, 255, 0.45);
+      background: linear-gradient(180deg, rgba(45, 125, 255, 0.30), rgba(45, 125, 255, 0.14));
+    }
+
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .btn:active:not(:disabled) { transform: translateY(0px); }
+
+    .btn.primary::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      pointer-events: none;
+      opacity: 0;
+      background: radial-gradient(600px 120px at 30% 30%, rgba(255,255,255,0.18), transparent 55%);
+      transition: opacity 160ms ease;
+    }
+
+    .btn.primary { position: relative; overflow: hidden; }
+    .btn.primary:hover:not(:disabled)::after { opacity: 1; }
+
+    .ico {
+      width: 18px;
+      height: 18px;
+      display: inline-block;
+      flex: 0 0 auto;
+    }
+
+    .sep {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 10px;
+      align-items: center;
+      margin: 6px 0 2px;
+      color: rgba(255,255,255,0.55);
+      font-weight: 900;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .sep::before, .sep::after {
+      content: "";
+      height: 1px;
+      background: rgba(255,255,255,0.10);
+    }
+
+    .flash { display: grid; gap: 10px; }
+
+    .notice, .error, .message {
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-weight: 900;
+      font-size: 13px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      box-shadow: var(--shadow2);
+    }
+
+    .notice.err, .error { border-color: rgba(237, 73, 86, 0.30); background: rgba(237, 73, 86, 0.10); }
+    .notice.ok, .message { border-color: rgba(46, 204, 113, 0.28); background: rgba(46, 204, 113, 0.10); }
+    .muted { color: var(--muted); font-size: 12px; line-height: 1.4; }
+    a { color: rgba(90, 162, 255, 0.95); text-decoration: none; font-weight: 900; }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      padding: 1px 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.20);
+      color: rgba(255,255,255,0.86);
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 8px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0, 0, 0, 0.20);
+    }
+
+    .tab {
+      appearance: none;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.82);
+      font-weight: 950;
+      border-radius: 12px;
+      padding: 10px 10px;
+      cursor: pointer;
+      letter-spacing: 0.01em;
+      transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+    }
+
+    .tab:hover { transform: translateY(-1px); }
+    .tab[aria-selected="true"] {
+      border-color: rgba(90, 162, 255, 0.42);
+      background: rgba(45, 125, 255, 0.16);
+      color: rgba(255,255,255,0.92);
+    }
+
+    .pane { margin-top: 14px; display: grid; gap: 12px; }
+    .pane[hidden] { display: none; }
+    .pane.enter { animation: paneIn 360ms ease both; }
+
+    .pane__head { display: grid; gap: 4px; }
+    .pane__title { margin: 0; font-size: 14px; font-weight: 1000; letter-spacing: 0.02em; }
+    .pane__desc { margin: 0; }
+
+    @media (max-width: 980px) {
+      html, body { overflow: auto; }
+      .main { grid-template-columns: 1fr; }
+      .left { border-right: 0; border-bottom: 1px solid var(--border); }
+      .right { padding-bottom: 36px; }
+    }
+
+    @media (max-width: 520px) {
+      .tabs { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .panel { animation: rise 520ms ease both; }
+      @keyframes rise {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes paneIn {
+        from { opacity: 0; transform: translateY(6px); filter: blur(2px); }
+        to { opacity: 1; transform: translateY(0); filter: blur(0); }
+      }
+
+      body::after { animation: drift 10s ease-in-out infinite alternate; }
+      @keyframes drift {
+        from { transform: translate3d(-1.2%, -0.8%, 0) scale(1.02); }
+        to { transform: translate3d(1.0%, 1.1%, 0) scale(1.03); }
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="main">
+      <section class="left">
+        <a class="brand" href="/" data-nav>
+          <img class="logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="Lamp">
+          <span class="word">Lamp</span>
+        </a>
+        <div class="hero">
+          <div class="hero__inner">
+            <div class="kicker"><span class="dot"></span> <span data-i18n="secure_signin">Secure sign-in</span></div>
+            <h1 class="title" data-i18n="welcome_back">Welcome back.</h1>
+            <p class="subtitle" data-i18n="auth_welcome_sub">Sign in to load your chats, preferences, and plan. Powered by Firebase Authentication.</p>
+            <ul class="bullets" aria-label="Highlights">
+              <li><span class="mark" aria-hidden="true"></span><span><b>Google</b> is the fastest option for most users.</span></li>
+              <li><span class="mark" aria-hidden="true"></span><span><b>Email</b> works with a password or a one-time magic link.</span></li>
+              <li><span class="mark" aria-hidden="true"></span><span>After sign-in, we create a <b>local profile</b> and open your app.</span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <aside class="right">
+        <section class="panel">
+          <h2 data-i18n="login">Login</h2>
+          <p class="tag" data-i18n="auth_tabs_hint">Separate tabs for sign-in, sign-up, and magic link. Google is usually the fastest.</p>
+
+          <div id="flash" class="flash" aria-live="polite">
+            {% if error %}<div class="notice err">{{ error }}</div>{% endif %}
+            {% if message %}<div class="notice ok">{{ message }}</div>{% endif %}
+            {% if firebase_error %}
+              <div class="notice err">{{ firebase_error }}</div>
+              <div class="muted">Set <code>FIREBASE_ADMIN_CREDENTIALS_PATH</code> (service account JSON) and Firebase web config env vars.</div>
+            {% endif %}
+            {% if not firebase_config %}
+              <div class="notice err">Firebase web config is missing. Set FIREBASE_API_KEY, FIREBASE_AUTH_DOMAIN, FIREBASE_PROJECT_ID, FIREBASE_APP_ID, etc.</div>
+            {% endif %}
+          </div>
+
+          <div class="tabs" role="tablist" aria-label="Authentication mode">
+            <button class="tab" id="tabSignIn" role="tab" aria-controls="paneSignIn" aria-selected="true" type="button" data-i18n="sign_in">Sign in</button>
+            <button class="tab" id="tabSignUp" role="tab" aria-controls="paneSignUp" aria-selected="false" type="button" data-i18n="sign_up">Sign up</button>
+            <button class="tab" id="tabMagic" role="tab" aria-controls="paneMagic" aria-selected="false" type="button" data-i18n="magic_link">Magic link</button>
+            <button class="tab" id="tabPhone" role="tab" aria-controls="panePhone" aria-selected="false" type="button" data-i18n="phone">Phone</button>
+          </div>
+
+          <div class="pane" id="paneSignIn" role="tabpanel" aria-labelledby="tabSignIn">
+            <div class="pane__head">
+              <p class="pane__title" data-i18n="sign_in">Sign in</p>
+              <p class="muted pane__desc" data-i18n="auth_signin_desc">Use Google, or sign in with email and password.</p>
+            </div>
+
+            <button class="btn primary" id="googleBtn" type="button">
+              <svg class="ico" viewBox="0 0 48 48" aria-hidden="true">
+                <path fill="#EA4335" d="M24 10.2c3.4 0 6.4 1.2 8.8 3.4l6-6C35.2 4.3 30 2 24 2 14.6 2 6.6 7.4 2.7 15.2l7.2 5.6C11.6 14.7 17.3 10.2 24 10.2z"/>
+                <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-2.8-.4-4.2H24v8h12.7c-.6 3.2-2.4 5.8-5.1 7.6l7.8 6.1c4.6-4.2 7.1-10.4 7.1-17.5z"/>
+                <path fill="#FBBC05" d="M9.9 28.8c-.6-1.8-1-3.7-1-5.8s.4-4 1-5.8l-7.2-5.6C1 15.3 0 19.5 0 24c0 4.5 1 8.7 2.7 12.4l7.2-5.6z"/>
+                <path fill="#34A853" d="M24 46c6 0 11.1-2 14.8-5.4l-7.8-6.1c-2.1 1.4-4.8 2.3-7 2.3-6.7 0-12.4-4.5-14.1-10.6l-7.2 5.6C6.6 40.6 14.6 46 24 46z"/>
+              </svg>
+              <span data-i18n="continue_google">Continue with Google</span>
+            </button>
+
+            <button class="btn" id="anonBtn" type="button">
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="currentColor" d="M12 12a4.2 4.2 0 1 0-4.2-4.2A4.2 4.2 0 0 0 12 12z"/>
+                <path fill="currentColor" d="M4 19c0-2.9 3.6-5 8-5s8 2.1 8 5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/>
+              </svg>
+              <span data-i18n="continue_guest">Continue as Guest</span>
+            </button>
+            <div class="muted" data-i18n="auth_guest_hint2">Guest mode creates a temporary profile. You can connect Google, email, or phone later.</div>
+
+            <div class="sep" data-i18n="or">or</div>
+
+            <div class="row1">
+              <div>
+                <label for="emailIn" data-i18n="email">Email</label>
+                <input id="emailIn" class="field" type="email" autocomplete="username" data-i18n-placeholder="placeholder_email" placeholder="you@example.com">
+              </div>
+            </div>
+
+            <div class="row">
+              <div>
+                <label for="pwIn" data-i18n="password">Password</label>
+                <div class="pw-wrap">
+                  <input id="pwIn" class="field" type="password" autocomplete="current-password" data-i18n-placeholder="placeholder_password" placeholder="Your password">
+                  <button class="pw-toggle" id="pwInToggle" type="button" data-i18n="show">Show</button>
+                </div>
+              </div>
+              <div>
+                <label>&nbsp;</label>
+                <button class="btn" id="signInBtn" type="button">
+                  <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="currentColor" d="M10.5 7.5a1 1 0 0 1 1.4 0l3.8 3.8c.4.4.4 1 0 1.4l-3.8 3.8a1 1 0 1 1-1.4-1.4l2.1-2.1H4a1 1 0 1 1 0-2h8.6l-2.1-2.1a1 1 0 0 1 0-1.4z"/>
+                    <path fill="currentColor" d="M14 4h5a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-5a1 1 0 1 1 0-2h4V6h-4a1 1 0 1 1 0-2z"/>
+                  </svg>
+                  <span data-i18n="sign_in">Sign in</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="pane" id="paneSignUp" role="tabpanel" aria-labelledby="tabSignUp" hidden>
+            <div class="pane__head">
+              <p class="pane__title" data-i18n="create_account">Create account</p>
+              <p class="muted pane__desc" data-i18n="auth_signup_desc">Create a new account with email and password, or use Google.</p>
+            </div>
+
+            <button class="btn primary" id="googleBtn2" type="button">
+              <svg class="ico" viewBox="0 0 48 48" aria-hidden="true">
+                <path fill="#EA4335" d="M24 10.2c3.4 0 6.4 1.2 8.8 3.4l6-6C35.2 4.3 30 2 24 2 14.6 2 6.6 7.4 2.7 15.2l7.2 5.6C11.6 14.7 17.3 10.2 24 10.2z"/>
+                <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-2.8-.4-4.2H24v8h12.7c-.6 3.2-2.4 5.8-5.1 7.6l7.8 6.1c4.6-4.2 7.1-10.4 7.1-17.5z"/>
+                <path fill="#FBBC05" d="M9.9 28.8c-.6-1.8-1-3.7-1-5.8s.4-4 1-5.8l-7.2-5.6C1 15.3 0 19.5 0 24c0 4.5 1 8.7 2.7 12.4l7.2-5.6z"/>
+                <path fill="#34A853" d="M24 46c6 0 11.1-2 14.8-5.4l-7.8-6.1c-2.1 1.4-4.8 2.3-7 2.3-6.7 0-12.4-4.5-14.1-10.6l-7.2 5.6C6.6 40.6 14.6 46 24 46z"/>
+              </svg>
+              <span data-i18n="continue_google">Continue with Google</span>
+            </button>
+
+            <div class="row1">
+              <div>
+                <label for="nickUp" data-i18n="nickname">Nickname</label>
+                <input id="nickUp" class="field" autocomplete="nickname" data-i18n-placeholder="placeholder_nickname" placeholder="Your nickname (3-24 chars)">
+                <div class="muted">Shown in your profile and chats. Letters/numbers/underscore only.</div>
+              </div>
+            </div>
+
+            <div class="row1">
+              <div>
+                <label for="emailUp" data-i18n="email">Email</label>
+                <input id="emailUp" class="field" type="email" autocomplete="username" data-i18n-placeholder="placeholder_email" placeholder="you@example.com">
+              </div>
+            </div>
+
+            <div class="row">
+              <div>
+                <label for="pwUp" data-i18n="password">Password</label>
+                <div class="pw-wrap">
+                  <input id="pwUp" class="field" type="password" autocomplete="new-password" data-i18n-placeholder="placeholder_pw_min" placeholder="At least 6 characters">
+                  <button class="pw-toggle" id="pwUpToggle" type="button" data-i18n="show">Show</button>
+                </div>
+              </div>
+              <div>
+                <label for="pwUp2" data-i18n="confirm">Confirm</label>
+                <input id="pwUp2" class="field" type="password" autocomplete="new-password" data-i18n-placeholder="placeholder_pw_repeat" placeholder="Repeat password">
+              </div>
+            </div>
+
+            <button class="btn" id="signUpBtn" type="button">
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="currentColor" d="M12 12a4.2 4.2 0 1 0-4.2-4.2A4.2 4.2 0 0 0 12 12zm0 2c-4.4 0-8 2.3-8 5.1A1.9 1.9 0 0 0 5.9 21h6.6a1 1 0 0 1 0-2H6.2c.6-1.6 3.2-3 5.8-3 1.1 0 2.2.2 3.2.6a1 1 0 1 1-.8 1.9c-.7-.3-1.5-.5-2.4-.5a1 1 0 0 1 0-2z"/>
+                <path fill="currentColor" d="M19 13a1 1 0 0 1 1 1v2h2a1 1 0 1 1 0 2h-2v2a1 1 0 1 1-2 0v-2h-2a1 1 0 1 1 0-2h2v-2a1 1 0 0 1 1-1z"/>
+              </svg>
+              <span data-i18n="create_account">Create account</span>
+            </button>
+          </div>
+
+          <div class="pane" id="paneMagic" role="tabpanel" aria-labelledby="tabMagic" hidden>
+            <div class="pane__head">
+              <p class="pane__title" data-i18n="magic_link">Magic link</p>
+              <p class="muted pane__desc">We will email you a one-time sign-in link. Requires enabling Email link in Firebase Console.</p>
+            </div>
+
+            <div class="row1">
+              <div>
+                <label for="emailMagic" data-i18n="email">Email</label>
+                <input id="emailMagic" class="field" type="email" autocomplete="username" data-i18n-placeholder="placeholder_email" placeholder="you@example.com">
+              </div>
+            </div>
+
+            <button class="btn" id="magicLinkBtn" type="button">
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="currentColor" d="M10.6 13.4a1 1 0 0 1 0-1.4l2.5-2.5a1 1 0 1 1 1.4 1.4L12 13.4a1 1 0 0 1-1.4 0z"/>
+                <path fill="currentColor" d="M7.1 16.9a4 4 0 0 1 0-5.7l1.4-1.4a1 1 0 1 1 1.4 1.4l-1.4 1.4a2 2 0 0 0 0 2.9 1 1 0 0 1-1.4 1.4z"/>
+                <path fill="currentColor" d="M16.9 7.1a4 4 0 0 1 0 5.7l-1.4 1.4a1 1 0 1 1-1.4-1.4l1.4-1.4a2 2 0 0 0 0-2.9 1 1 0 0 1 1.4-1.4z"/>
+                <path fill="currentColor" d="M8.8 5.3A6 6 0 0 1 19 9.5a1 1 0 1 1-2 0 4 4 0 0 0-6.8-2.8 1 1 0 0 1-1.4-1.4z"/>
+                <path fill="currentColor" d="M15.2 18.7A6 6 0 0 1 5 14.5a1 1 0 1 1 2 0 4 4 0 0 0 6.8 2.8 1 1 0 1 1 1.4 1.4z"/>
+              </svg>
+              <span data-i18n="send_magic_link">Send magic link</span>
+            </button>
+          </div>
+
+          <div class="pane" id="panePhone" role="tabpanel" aria-labelledby="tabPhone" hidden>
+            <div class="pane__head">
+              <p class="pane__title" data-i18n="phone_sign_in">Phone sign-in</p>
+              <p class="muted pane__desc">Receive a code via SMS. Make sure Phone provider is enabled in Firebase Console.</p>
+            </div>
+
+            <div class="row1">
+              <div>
+                <label for="phoneNumber" data-i18n="phone_number">Phone number</label>
+                <input id="phoneNumber" class="field" type="tel" autocomplete="tel" data-i18n-placeholder="placeholder_phone" placeholder="+1 555 123 4567">
+              </div>
+            </div>
+
+            <button class="btn" id="phoneSendBtn" type="button">
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="currentColor" d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5L4 8V6l8 5 8-5z"/>
+              </svg>
+              <span data-i18n="send_code">Send code</span>
+            </button>
+
+            <div class="row">
+              <div>
+                <label for="phoneCode" data-i18n="code">Code</label>
+                <input id="phoneCode" class="field" inputmode="numeric" autocomplete="one-time-code" data-i18n-placeholder="placeholder_code" placeholder="123456">
+              </div>
+              <div>
+                <label>&nbsp;</label>
+                <button class="btn" id="phoneVerifyBtn" type="button">
+                  <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="currentColor" d="M9.2 16.6 4.9 12.3a1 1 0 0 1 1.4-1.4l2.9 2.9 8.5-8.5a1 1 0 1 1 1.4 1.4l-9.9 9.9a1 1 0 0 1-1.4 0z"/>
+                  </svg>
+                  <span data-i18n="verify">Verify</span>
+                </button>
+              </div>
+            </div>
+
+            <div id="recaptcha-container" class="muted" style="min-height: 1px;"></div>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <footer style="padding:12px 18px; color: rgba(255,255,255,0.55); font-size:12px;">
+      <a href="/feedback" data-nav>Feedback</a>
+      <span style="margin:0 10px; opacity:.6;">|</span>
+      <a href="/sitemap.xml" data-nav>Sitemap</a>
+      <span style="margin:0 10px; opacity:.6;">|</span>
+      <a href="/robots.txt" data-nav>Robots</a>
+      <span style="float:right;">2026 Lamp</span>
+    </footer>
+  </div>
+
+  <script>
+    window.__FIREBASE_CONFIG__ = {{ (firebase_config or {})|tojson }};
+  </script>
+
+  <!-- Firebase JS SDK (v9+ modular via ESM imports) -->
+  <script type="module">
+    import { getApp, getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      GoogleAuthProvider,
+      RecaptchaVerifier,
+      createUserWithEmailAndPassword,
+      getAuth,
+      getIdToken,
+      isSignInWithEmailLink,
+      sendSignInLinkToEmail,
+      signInAnonymously,
+      signInWithEmailAndPassword,
+      signInWithEmailLink,
+      signInWithPhoneNumber,
+      signInWithPopup,
+      signOut,
+      updateProfile,
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+    (function () {
+      const cfg = window.__FIREBASE_CONFIG__ || {};
+
+      const tabSignIn = document.getElementById("tabSignIn");
+      const tabSignUp = document.getElementById("tabSignUp");
+      const tabMagic = document.getElementById("tabMagic");
+      const tabPhone = document.getElementById("tabPhone");
+      const paneSignIn = document.getElementById("paneSignIn");
+      const paneSignUp = document.getElementById("paneSignUp");
+      const paneMagic = document.getElementById("paneMagic");
+      const panePhone = document.getElementById("panePhone");
+
+      const googleBtn = document.getElementById("googleBtn");
+      const googleBtn2 = document.getElementById("googleBtn2");
+      const anonBtn = document.getElementById("anonBtn");
+      const signInBtn = document.getElementById("signInBtn");
+      const signUpBtn = document.getElementById("signUpBtn");
+      const magicLinkBtn = document.getElementById("magicLinkBtn");
+      const phoneSendBtn = document.getElementById("phoneSendBtn");
+      const phoneVerifyBtn = document.getElementById("phoneVerifyBtn");
+
+      const emailIn = document.getElementById("emailIn");
+      const pwIn = document.getElementById("pwIn");
+      const pwInToggle = document.getElementById("pwInToggle");
+      const emailUp = document.getElementById("emailUp");
+      const nickUp = document.getElementById("nickUp");
+      const pwUp = document.getElementById("pwUp");
+      const pwUp2 = document.getElementById("pwUp2");
+      const pwUpToggle = document.getElementById("pwUpToggle");
+      const emailMagic = document.getElementById("emailMagic");
+      const phoneNumber = document.getElementById("phoneNumber");
+      const phoneCode = document.getElementById("phoneCode");
+      const recaptchaContainer = document.getElementById("recaptcha-container");
+
+      function setDisabled(v) {
+        [
+          tabSignIn, tabSignUp, tabMagic, tabPhone,
+          googleBtn, googleBtn2, anonBtn, signInBtn, signUpBtn, magicLinkBtn, phoneSendBtn, phoneVerifyBtn,
+          emailIn, pwIn, pwInToggle,
+          nickUp, emailUp, pwUp, pwUp2, pwUpToggle,
+          emailMagic, phoneNumber, phoneCode,
+        ].forEach((el) => { if (el) el.disabled = !!v; });
+      }
+
+      function showNotice(msg, kind) {
+        const host = document.getElementById("flash");
+        const div = document.createElement("div");
+        const k = (kind === "ok") ? "ok" : "err";
+        div.className = "notice " + k;
+        div.textContent = msg || ((k === "ok") ? "OK" : "Error");
+        if (host) host.prepend(div);
+        else document.body.prepend(div);
+        setTimeout(() => { try { div.remove(); } catch (e) {} }, 9000);
+      }
+
+      function showErr(msg) { showNotice(msg, "err"); }
+      function showOk(msg) { showNotice(msg, "ok"); }
+
+      function postSession(idToken, nickname) {
+        return fetch("/firebase/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ idToken: idToken, nickname: nickname || "" }),
+        }).then(async (res) => {
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok || !data.ok) {
+            const parts = [];
+            parts.push((data && data.error) ? String(data.error) : "Session login failed");
+            if (data && data.details) parts.push(String(data.details));
+            if (data && data.uid) parts.push("uid=" + String(data.uid));
+            throw new Error(parts.join(" | "));
+          }
+          window.location.href = "/app";
+        });
+      }
+
+      function normalizeEmail(s) {
+        return (s || "").trim().toLowerCase();
+      }
+
+      function friendlyAuthError(e) {
+        const code = (e && e.code) ? String(e.code) : "";
+        if (code === "app/missing-email") return "Your Firebase account has no email. Delete the Firebase user and sign in again with Google or Email/Password.";
+        if (code === "auth/invalid-continue-uri") return "Magic link redirect URL is invalid. Check Authorized domains in Firebase Console and use http://localhost or http://127.0.0.1.";
+        if (code === "auth/unauthorized-continue-uri") return "Magic link redirect URL is not authorized. Add this domain under Firebase Console -> Authentication -> Settings -> Authorized domains.";
+        if (code === "auth/operation-not-supported-in-this-environment") return "This sign-in method is blocked in this browser context. Try opening the site normally (not inside an embedded webview) or use a different browser.";
+        if (code === "auth/invalid-phone-number") return "Invalid phone number. Use international format, e.g. +15551234567.";
+        if (code === "auth/invalid-verification-code") return "Wrong code. Please try again.";
+        if (code === "auth/missing-verification-code") return "Enter the SMS code.";
+        if (code === "auth/too-many-requests") return "Too many attempts. Wait a bit and try again.";
+        if (code === "auth/captcha-check-failed") return "reCAPTCHA failed. Refresh the page and try again.";
+        if (code === "auth/invalid-email") return "Please enter a valid email address.";
+        if (code === "auth/missing-password") return "Please enter a password.";
+        if (code === "auth/weak-password") return "Password is too weak. Use at least 6 characters.";
+        if (code === "auth/email-already-in-use") return "This email is already registered. Use the Sign in tab.";
+        if (code === "auth/wrong-password") return "Wrong password.";
+        if (code === "auth/user-not-found") return "No account found for this email. Switch to the Sign up tab.";
+        if (code === "auth/invalid-action-code") return "Invalid or expired magic link. Request a new one.";
+        if (code === "auth/operation-not-allowed") return "Provider not enabled in Firebase Console (Authentication -> Sign-in method).";
+        if (code === "auth/popup-blocked") return "Popup blocked. Allow popups and try again.";
+        if (code === "auth/unauthorized-domain") return "This domain is not authorized in Firebase (Authentication -> Settings -> Authorized domains).";
+        return (e && e.message) ? e.message : "Authentication failed.";
+      }
+
+      function setTabSelected(tabEl, selected) {
+        if (!tabEl) return;
+        tabEl.setAttribute("aria-selected", selected ? "true" : "false");
+      }
+
+      function showPane(paneEl) {
+        [paneSignIn, paneSignUp, paneMagic, panePhone].forEach((p) => {
+          if (!p) return;
+          if (p === paneEl) {
+            p.removeAttribute("hidden");
+            try {
+              p.classList.remove("enter");
+              void p.offsetWidth; // restart animation
+              p.classList.add("enter");
+            } catch (e) {}
+          } else {
+            p.setAttribute("hidden", "hidden");
+          }
+        });
+      }
+
+      function syncEmails(primary) {
+        const v = normalizeEmail(primary || "");
+        if (!v) return;
+        if (emailIn && normalizeEmail(emailIn.value) !== v) emailIn.value = v;
+        if (emailUp && normalizeEmail(emailUp.value) !== v) emailUp.value = v;
+        if (emailMagic && normalizeEmail(emailMagic.value) !== v) emailMagic.value = v;
+      }
+
+      function activate(which) {
+        const current = normalizeEmail(
+          (emailIn && emailIn.value) ||
+          (emailUp && emailUp.value) ||
+          (emailMagic && emailMagic.value) ||
+          ""
+        );
+        syncEmails(current);
+
+        if (which === "signin") {
+          setTabSelected(tabSignIn, true);
+          setTabSelected(tabSignUp, false);
+          setTabSelected(tabMagic, false);
+          setTabSelected(tabPhone, false);
+          showPane(paneSignIn);
+          try { (pwIn || emailIn).focus(); } catch (e) {}
+          return;
+        }
+        if (which === "signup") {
+          setTabSelected(tabSignIn, false);
+          setTabSelected(tabSignUp, true);
+          setTabSelected(tabMagic, false);
+          setTabSelected(tabPhone, false);
+          showPane(paneSignUp);
+          try { (emailUp || pwUp).focus(); } catch (e) {}
+          return;
+        }
+        if (which === "magic") {
+          setTabSelected(tabSignIn, false);
+          setTabSelected(tabSignUp, false);
+          setTabSelected(tabMagic, true);
+          setTabSelected(tabPhone, false);
+          showPane(paneMagic);
+          try { (emailMagic).focus(); } catch (e) {}
+          return;
+        }
+        setTabSelected(tabSignIn, false);
+        setTabSelected(tabSignUp, false);
+        setTabSelected(tabMagic, false);
+        setTabSelected(tabPhone, true);
+        showPane(panePhone);
+        try { (phoneNumber).focus(); } catch (e) {}
+      }
+
+      if (tabSignIn) tabSignIn.addEventListener("click", () => activate("signin"));
+      if (tabSignUp) tabSignUp.addEventListener("click", () => activate("signup"));
+      if (tabMagic) tabMagic.addEventListener("click", () => activate("magic"));
+      if (tabPhone) tabPhone.addEventListener("click", () => activate("phone"));
+
+      // Allow deep-linking to a specific tab, e.g. /auth?tab=signup
+      try {
+        const t = (new URLSearchParams(window.location.search).get("tab") || "").trim().toLowerCase();
+        if (t === "signin" || t === "signup" || t === "magic" || t === "phone") activate(t);
+      } catch (e) {}
+
+      if (!cfg || !cfg.apiKey) {
+        setDisabled(true);
+        return;
+      }
+
+      let app;
+      try {
+        app = getApps().length ? getApp() : initializeApp(cfg);
+      } catch (e) {
+        setDisabled(true);
+        showErr("Could not initialize Firebase app. Check your Firebase web config.");
+        return;
+      }
+
+      const auth = getAuth(app);
+      // Start the login page from a clean auth state. This avoids getting stuck
+      // with an old anonymous/no-email Firebase user in local storage.
+      try { signOut(auth).catch(() => {}); } catch (e) {}
+
+      function bindPwToggle(toggleBtn, inputs) {
+        if (!toggleBtn) return;
+        toggleBtn.addEventListener("click", () => {
+          const list = (inputs || []).filter(Boolean);
+          if (!list.length) return;
+          const anyPw = list.some((el) => el.type === "password");
+          list.forEach((el) => { el.type = anyPw ? "text" : "password"; });
+          const tr = (window.pgptI18n && typeof window.pgptI18n.t === "function")
+            ? window.pgptI18n.t.bind(window.pgptI18n)
+            : ((k) => (k === "hide" ? "Hide" : "Show"));
+          toggleBtn.textContent = anyPw ? tr("hide") : tr("show");
+        });
+      }
+      bindPwToggle(pwInToggle, [pwIn]);
+      bindPwToggle(pwUpToggle, [pwUp, pwUp2]);
+
+      function googleFlow() {
+        setDisabled(true);
+        const provider = new GoogleAuthProvider();
+        try { provider.addScope("email"); } catch (e) {}
+        try { provider.addScope("profile"); } catch (e) {}
+        signInWithPopup(auth, provider)
+          .then((cred) => {
+            const email = (cred && cred.user && cred.user.email) ? String(cred.user.email) : "";
+            if (!email) throw ({ code: "app/missing-email", message: "Missing email on Firebase user." });
+            return getIdToken(cred.user, true);
+          })
+          .then((tok) => postSession(tok, ""))
+          .catch((e) => showErr(friendlyAuthError(e)))
+          .finally(() => setDisabled(false));
+      }
+
+      if (googleBtn) googleBtn.addEventListener("click", googleFlow);
+      if (googleBtn2) googleBtn2.addEventListener("click", googleFlow);
+
+      function anonymousFlow() {
+        setDisabled(true);
+        signInAnonymously(auth)
+          .then((cred) => getIdToken(cred.user, true))
+          .then((tok) => postSession(tok, ""))
+          .catch((e) => showErr(friendlyAuthError(e)))
+          .finally(() => setDisabled(false));
+      }
+
+      if (anonBtn) anonBtn.addEventListener("click", anonymousFlow);
+
+      let phoneConfirm = null;
+      let recaptcha = null;
+      function ensureRecaptcha() {
+        if (recaptcha) return recaptcha;
+        try {
+          recaptcha = new RecaptchaVerifier(auth, "recaptcha-container", { size: "invisible" });
+          recaptcha.render().catch(() => {});
+        } catch (e) {
+          // ignore; signInWithPhoneNumber will surface a meaningful error
+        }
+        return recaptcha;
+      }
+
+      function phoneSendFlow() {
+        const phone = String((phoneNumber && phoneNumber.value) || "").trim();
+        if (!phone) { showErr("Enter your phone number."); return; }
+        if (!phone.startsWith("+")) { showErr("Use international format with + (example: +15551234567)."); return; }
+        setDisabled(true);
+        phoneConfirm = null;
+        const v = ensureRecaptcha();
+        signInWithPhoneNumber(auth, phone, v)
+          .then((confirmationResult) => {
+            phoneConfirm = confirmationResult;
+            showOk("Code sent. Enter the SMS code to verify.");
+            try { (phoneCode || phoneNumber).focus(); } catch (e) {}
+          })
+          .catch((e) => showErr(friendlyAuthError(e)))
+          .finally(() => setDisabled(false));
+      }
+
+      function phoneVerifyFlow() {
+        const code = String((phoneCode && phoneCode.value) || "").trim();
+        if (!code) { showErr("Enter the SMS code."); return; }
+        if (!phoneConfirm) { showErr("Click Send code first."); return; }
+        setDisabled(true);
+        phoneConfirm.confirm(code)
+          .then((cred) => getIdToken(cred.user, true))
+          .then((tok) => postSession(tok, ""))
+          .catch((e) => showErr(friendlyAuthError(e)))
+          .finally(() => setDisabled(false));
+      }
+
+      if (phoneSendBtn) phoneSendBtn.addEventListener("click", phoneSendFlow);
+      if (phoneVerifyBtn) phoneVerifyBtn.addEventListener("click", phoneVerifyFlow);
+
+      function signInFlow() {
+        const email = normalizeEmail(emailIn && emailIn.value);
+        const pw = (pwIn && pwIn.value) ? String(pwIn.value) : "";
+        if (!email) { showErr("Enter your email."); return; }
+        if (!pw) { showErr("Enter your password."); return; }
+
+        setDisabled(true);
+        signInWithEmailAndPassword(auth, email, pw)
+          .then((cred) => {
+            const em = (cred && cred.user && cred.user.email) ? String(cred.user.email) : "";
+            if (!em) throw ({ code: "app/missing-email", message: "Missing email on Firebase user." });
+            return getIdToken(cred.user, true);
+          })
+          .then((tok) => postSession(tok, ""))
+          .catch((e) => showErr(friendlyAuthError(e)))
+          .finally(() => setDisabled(false));
+      }
+
+      function signUpFlow() {
+        const nickname = String((nickUp && nickUp.value) || "").trim();
+        const email = normalizeEmail(emailUp && emailUp.value);
+        const pwA = (pwUp && pwUp.value) ? String(pwUp.value) : "";
+        const pwB = (pwUp2 && pwUp2.value) ? String(pwUp2.value) : "";
+        if (!nickname) { showErr("Enter a nickname."); return; }
+        if (!/^[A-Za-z0-9_]{3,24}$/.test(nickname)) { showErr("Nickname must be 3-24 characters: letters, numbers, underscore."); return; }
+        if (!email) { showErr("Enter your email."); return; }
+        if (!pwA) { showErr("Enter a password."); return; }
+        if (pwA.length < 6) { showErr("Password must be at least 6 characters."); return; }
+        if (pwA !== pwB) { showErr("Passwords do not match."); return; }
+
+        setDisabled(true);
+        createUserWithEmailAndPassword(auth, email, pwA)
+          .then((cred) => {
+            const em = (cred && cred.user && cred.user.email) ? String(cred.user.email) : "";
+            if (!em) throw ({ code: "app/missing-email", message: "Missing email on Firebase user." });
+            // Store nickname in Firebase user profile too, then force-refresh token.
+            return Promise.resolve()
+              .then(() => updateProfile(cred.user, { displayName: nickname }))
+              .catch(() => {})
+              .then(() => getIdToken(cred.user, true))
+              .then((tok) => ({ tok, nickname }));
+          })
+          .then((r) => postSession(r.tok, r.nickname))
+          .catch((e) => showErr(friendlyAuthError(e)))
+          .finally(() => setDisabled(false));
+      }
+
+      function sendMagicLink() {
+        const email = normalizeEmail(emailMagic && emailMagic.value);
+        if (!email) { showErr("Enter your email."); return; }
+        setDisabled(true);
+        const settings = { url: window.location.origin + "/auth", handleCodeInApp: true };
+        sendSignInLinkToEmail(auth, email, settings)
+          .then(() => {
+            try { localStorage.setItem("emailForSignIn", email); } catch (e) {}
+            showOk("Magic link sent. Check your email and open the link on this device.");
+          })
+          .catch((e) => showErr(friendlyAuthError(e)))
+          .finally(() => setDisabled(false));
+      }
+
+      if (signInBtn) signInBtn.addEventListener("click", signInFlow);
+      if (signUpBtn) signUpBtn.addEventListener("click", signUpFlow);
+      if (magicLinkBtn) magicLinkBtn.addEventListener("click", sendMagicLink);
+
+      [[emailIn, pwIn], [nickUp, emailUp, pwUp2], [emailMagic], [phoneNumber, phoneCode]].forEach((pair) => {
+        pair.forEach((el) => {
+          if (!el) return;
+          el.addEventListener("keydown", (e) => {
+            if (e.key !== "Enter") return;
+            e.preventDefault();
+            if (el === pwUp2) return signUpFlow();
+            if (el === emailMagic) return sendMagicLink();
+            if (el === phoneNumber) return phoneSendFlow();
+            if (el === phoneCode) return phoneVerifyFlow();
+            signInFlow();
+          });
+        });
+      });
+
+      // Complete email-link sign-in if URL contains the sign-in code.
+      try {
+        if (isSignInWithEmailLink(auth, window.location.href)) {
+          activate("magic");
+          let email = "";
+          try { email = (localStorage.getItem("emailForSignIn") || ""); } catch (e) {}
+          email = normalizeEmail(email);
+          if (!email) email = normalizeEmail(prompt("Confirm your email to finish sign-in:") || "");
+          if (email) {
+            syncEmails(email);
+            setDisabled(true);
+            signInWithEmailLink(auth, email, window.location.href)
+              .then((cred) => {
+                try { localStorage.removeItem("emailForSignIn"); } catch (e) {}
+                const em = (cred && cred.user && cred.user.email) ? String(cred.user.email) : "";
+                if (!em) throw ({ code: "app/missing-email", message: "Missing email on Firebase user." });
+                return getIdToken(cred.user, true);
+              })
+              .then((tok) => postSession(tok, ""))
+              .catch((e) => showErr(friendlyAuthError(e)))
+              .finally(() => setDisabled(false));
+            return;
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      activate("signin");
+    })();
+  </script>
+</body>
+</html>

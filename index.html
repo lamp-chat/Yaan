@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lamp</title>
+  <meta name="description" content="Lamp: an AI chat assistant web app (Flask) with messaging and calls.">
+  <meta name="robots" content="index, follow">
+
+  <meta property="og:title" content="Lamp">
+  <meta property="og:description" content="AI chat assistant web app (Flask) with messaging and calls.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="static/brand/logo.png">
+
+  <link rel="icon" href="static/brand/logo.png">
+
+  <!-- deploy: 2026-03-21 -->
+
+  <!-- Optional fonts. If blocked, the page will fall back gracefully. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Reuse existing brand splash assets from the Flask app. -->
+  <link rel="stylesheet" href="static/brand/splash.css">
+  <script src="static/brand/splash.js" defer></script>
+
+  <style>
+    :root {
+      --bg0: #07090c;
+      --bg1: #0a0f16;
+      --text: rgba(255, 255, 255, 0.92);
+      --muted: rgba(255, 255, 255, 0.62);
+      --border: rgba(255, 255, 255, 0.10);
+      --panel: rgba(18, 24, 34, 0.72);
+      --panel2: rgba(18, 24, 34, 0.52);
+      --blue: #1877f2;
+      --blue2: #3797f0;
+      --ring1: #fd1d1d;
+      --ring2: #fcb045;
+      --ring3: #833ab4;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+      --r: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      font-family: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(1200px 800px at 22% 14%, rgba(24, 119, 242, 0.18), transparent 55%),
+        radial-gradient(980px 760px at 82% 86%, rgba(131, 58, 180, 0.14), transparent 58%),
+        linear-gradient(160deg, var(--bg1), var(--bg0));
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    a { color: inherit; }
+
+    .lp {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: 1fr auto;
+    }
+
+    .lp-main {
+      display: grid;
+      grid-template-columns: 1fr 440px;
+      align-items: stretch;
+      gap: 0;
+    }
+
+    .lp-left {
+      position: relative;
+      padding: 28px 32px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      border-right: 1px solid var(--border);
+    }
+
+    .lp-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+      width: fit-content;
+    }
+
+    .lp-logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: 0 20px 44px rgba(0, 0, 0, 0.35);
+      object-fit: cover;
+      display: block;
+      background: rgba(0, 0, 0, 0.12);
+    }
+
+    .lp-word {
+      font-weight: 800;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.92);
+    }
+
+    .lp-hero {
+      display: grid;
+      place-items: center;
+      padding: 16px 10px 28px;
+    }
+
+    .lp-hero__inner {
+      width: min(760px, 100%);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      gap: 18px;
+    }
+
+    .lp-title {
+      margin: 0;
+      font-family: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+      font-weight: 700;
+      font-size: clamp(34px, 4.2vw, 56px);
+      line-height: 1.12;
+      letter-spacing: 0.01em;
+    }
+
+    .lp-title .a { color: var(--ring2); }
+    .lp-title .b { color: var(--ring1); }
+    .lp-title .c { color: var(--ring3); }
+
+    .lp-sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+      max-width: 600px;
+    }
+
+    .chips {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(0, 0, 0, 0.18);
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 12px;
+      letter-spacing: 0.01em;
+    }
+
+    /* "Phone stack" illustration built with CSS */
+    .phones {
+      position: relative;
+      width: min(560px, 92%);
+      height: 340px;
+      margin-top: 4px;
+    }
+
+    .phone {
+      position: absolute;
+      width: 220px;
+      height: 300px;
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.10), rgba(0, 0, 0, 0.22));
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 34px 90px rgba(0, 0, 0, 0.55);
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .phone::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(140px 140px at 30% 28%, rgba(55, 151, 240, 0.36), transparent 60%),
+        radial-gradient(170px 160px at 76% 72%, rgba(253, 29, 29, 0.22), transparent 62%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.20));
+      opacity: 0.95;
+    }
+
+    .phone::after {
+      content: "";
+      position: absolute;
+      left: 22px;
+      right: 22px;
+      bottom: 18px;
+      height: 38px;
+      border-radius: 999px;
+      border: 2px solid rgba(255, 255, 255, 0.26);
+      background: rgba(0, 0, 0, 0.18);
+    }
+
+    .phone .topline {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      top: 16px;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .phone.a { transform: rotate(-8deg); left: 10%; top: 28px; }
+    .phone.b { transform: rotate(0deg); left: 33%; top: 10px; }
+    .phone.c { transform: rotate(10deg); left: 56%; top: 36px; }
+
+    .bubble {
+      position: absolute;
+      top: 56px;
+      left: 22px;
+      border-radius: 999px;
+      padding: 8px 10px;
+      background: rgba(255, 255, 255, 0.92);
+      color: #14110a;
+      font-weight: 900;
+      font-size: 12px;
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .react {
+      position: absolute;
+      left: 10%;
+      bottom: 26px;
+      width: 64px;
+      height: 64px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 20%, #ff6a00, #ff006a 55%, #8a2be2);
+      opacity: 0.92;
+      transform: translateX(-20px);
+    }
+
+    .ring {
+      position: absolute;
+      right: 18%;
+      top: 168px;
+      width: 66px;
+      height: 66px;
+      border-radius: 999px;
+      background: conic-gradient(from 180deg, var(--ring1), var(--ring2), var(--ring3), var(--ring1));
+      padding: 3px;
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    .ring .inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    /* Right panel */
+    .lp-right {
+      padding: 28px 28px;
+      background:
+        radial-gradient(1000px 700px at 30% 0%, rgba(24, 119, 242, 0.12), transparent 55%),
+        linear-gradient(180deg, rgba(10, 15, 22, 0.95), rgba(9, 14, 20, 0.92));
+    }
+
+    .card {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      box-shadow: var(--shadow);
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 14px;
+      letter-spacing: 0.02em;
+      color: rgba(255, 255, 255, 0.86);
+    }
+
+    .code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      line-height: 1.4;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(0, 0, 0, 0.22);
+      color: rgba(255, 255, 255, 0.90);
+      overflow: auto;
+      white-space: pre;
+    }
+
+    .btnrow {
+      display: grid;
+      gap: 10px;
+    }
+
+    .btn {
+      width: 100%;
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 12px;
+      font-weight: 800;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn.primary {
+      background: linear-gradient(180deg, var(--blue2), var(--blue));
+      color: #fff;
+    }
+
+    .btn.ghost {
+      background: transparent;
+      color: rgba(255, 255, 255, 0.86);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .btn.ghost:hover { border-color: rgba(255, 255, 255, 0.34); }
+
+    .meta {
+      padding-top: 4px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .meta a { color: rgba(55, 151, 240, 0.95); text-decoration: none; }
+    .meta a:hover { text-decoration: underline; }
+
+    .lp-footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 14px 18px;
+      color: rgba(255, 255, 255, 0.42);
+      font-size: 11px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .lp-footer a { color: inherit; text-decoration: none; }
+    .lp-footer a:hover { color: rgba(255, 255, 255, 0.70); }
+
+    @media (max-width: 980px) {
+      html, body { overflow: auto; }
+      .lp-main { grid-template-columns: 1fr; }
+      .lp-left { border-right: 0; border-bottom: 1px solid var(--border); }
+      .lp { grid-template-rows: auto auto; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div id="lampSplash" class="lamp-splash" aria-hidden="true">
+    <div class="lamp-splash__inner">
+      <img class="lamp-splash__logo" src="static/brand/logo.png" alt="Lamp">
+      <div class="lamp-splash__word">Lamp</div>
+      <div class="lamp-splash__rule"></div>
+    </div>
+    <button class="lamp-splash__skip" type="button" data-splash-skip>Skip</button>
+  </div>
+
+  <div class="lp">
+    <div class="lp-main">
+      <section class="lp-left">
+        <a class="lp-brand" href="./">
+          <img class="lp-logo" src="static/brand/logo.png" alt="Lamp">
+          <span class="lp-word">Lamp</span>
+        </a>
+
+        <div class="lp-hero">
+          <div class="lp-hero__inner">
+            <h1 class="lp-title">
+              A calm web app for <span class="a">ideas</span>, <span class="b">messages</span>, and <span class="c">AI</span>.
+            </h1>
+            <p class="lp-sub">
+              Lamp is a Flask app with AI chat, direct messages, and calls. You are viewing the static GitHub Pages landing page.
+              To use the full app, run it locally or deploy it to a server.
+            </p>
+
+            <div class="chips" aria-label="Highlights">
+              <span class="chip">Flask</span>
+              <span class="chip">SQLite</span>
+              <span class="chip">OpenAI API</span>
+              <span class="chip">Brand assets in <code style="font-family:inherit">static/</code></span>
+            </div>
+
+            <div class="phones" aria-hidden="true">
+              <div class="phone a"><div class="topline"></div></div>
+              <div class="phone b"><div class="topline"></div><div class="bubble">AI <span style="opacity:.75">+</span> DM</div></div>
+              <div class="phone c"><div class="topline"></div></div>
+              <div class="react"></div>
+              <div class="ring"><div class="inner"></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="lp-right">
+        <div class="card">
+          <h2>Run The App Locally</h2>
+          <div class="code">python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python "python app.py"</div>
+
+          <div class="btnrow">
+            <a class="btn primary" href="README.md">Project README</a>
+            <a class="btn ghost" href="templates/landing.html">Flask landing template (source)</a>
+          </div>
+
+          <div class="meta">
+            Tip: set <code>OPENAI_API_KEY</code> in your environment (or copy <code>.env.example</code>).
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="lp-footer">
+      <a href="templates/landing.html">templates/landing.html</a>
+      <a href="static/brand/logo.svg">static/brand/logo.svg</a>
+      <a href=".env.example">.env.example</a>
+      <span>2026 Lamp</span>
+    </footer>
+  </div>
+</body>
+</html>

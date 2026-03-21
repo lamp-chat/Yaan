@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search - Lamp</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand/ig_layout.css', v=static_v) }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand/nav.css', v=static_v) }}">
+  <script src="{{ url_for('static', filename='brand/nav.js', v=static_v) }}" defer></script>
+  <style>
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--ig-surface);
+      border: 1px solid var(--ig-border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .q {
+      flex: 1;
+      min-width: 220px;
+      border: 1px solid var(--ig-border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+      background: var(--ig-surface);
+    }
+
+    .q:focus { box-shadow: 0 0 0 3px rgba(255, 201, 74, 0.22); }
+
+    .hint {
+      margin-top: 10px;
+      color: var(--ig-muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .list { margin-top: 12px; display: grid; }
+
+    .item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 6px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+    }
+    .item:first-child { border-top: 0; }
+
+    .left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .av {
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      object-fit: cover;
+      background: var(--ig-hover);
+      border: 1px solid var(--ig-border);
+      flex: 0 0 44px;
+    }
+
+    .name {
+      font-weight: 1000;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sub {
+      color: var(--ig-muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    .ig-btn.sm {
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+    }
+
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="ig-topbar" role="banner">
+    <div class="ig-topbar__inner">
+      <a class="ig-brand" href="/app" data-nav aria-label="Lamp home">
+        <span class="ig-brand__word">Lamp</span>
+      </a>
+      <div class="ig-search">
+        <input id="globalSearchInput" class="ig-search__input" placeholder="Search users" aria-label="Search users" value="{{ q|e }}">
+      </div>
+      <nav class="ig-actions" aria-label="Navigation">
+        <a class="ig-ico" href="/app" data-nav title="Home" aria-label="Home"><span class="ig-ico__glyph">&#8962;</span></a>
+        <a class="ig-ico" href="/account" data-nav title="Account" aria-label="Account"><span class="ig-ico__glyph">&#9786;</span></a>
+        <a class="ig-ico" href="/settings" data-nav title="Settings" aria-label="Settings"><span class="ig-ico__glyph">&#9881;</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="ig-page">
+    <div class="grid">
+      <section class="card">
+        <div style="font-weight:1000; font-size:18px;">Search</div>
+        <form class="search-row" method="GET" action="/search" style="margin-top:10px;">
+          <input class="q" name="q" value="{{ q|e }}" placeholder="Type a username..." autocomplete="off">
+          <button class="ig-btn primary" type="submit">Search</button>
+        </form>
+        <div class="hint">
+          {% if q %}Results for "{{ q|e }}".{% else %}Suggested users.{% endif %}
+          Open a profile to follow/unfollow.
+        </div>
+
+        <div class="list" id="results">
+          {% if q and not results %}
+            <div class="hint">No users found.</div>
+          {% endif %}
+          {% for u in results %}
+            <div class="item">
+              <a class="left" href="/u/{{ u.username|e }}" data-nav>
+                {% if u.photo_path %}
+                  <img class="av" alt="" src="{{ url_for('static', filename=u.photo_path) }}">
+                {% else %}
+                  <img class="av" alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cdefs%3E%3CradialGradient id='g' cx='30%25' cy='20%25' r='80%25'%3E%3Cstop offset='0%25' stop-color='%23ffe8a8'/%3E%3Cstop offset='55%25' stop-color='%23ffc94a'/%3E%3Cstop offset='100%25' stop-color='%23ffb703'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect x='0' y='0' width='64' height='64' rx='18' fill='url(%23g)'/%3E%3Cpath d='M32 34c6 0 11-5 11-11S38 12 32 12s-11 5-11 11 5 11 11 11zm0 6c-10.5 0-19 5.2-19 11.5V56h38v-4.5C51 45.2 42.5 40 32 40z' fill='rgba(20,17,10,0.22)'/%3E%3C/svg%3E">
+                {% endif %}
+                <div style="min-width:0">
+                  <div class="name">{{ u.username }}</div>
+                  <div class="sub">@{{ u.username }}</div>
+                </div>
+              </a>
+              <div class="actions">
+                <button class="ig-btn sm js-follow" type="button"
+                        data-user-id="{{ u.id }}"
+                        data-following="{{ '1' if u.is_following else '0' }}">
+                  {{ 'Following' if u.is_following else 'Follow' }}
+                </button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <aside class="card">
+        <div style="font-weight:1000; font-size:16px;">Tips</div>
+        <div class="hint">
+          Search is username-based right now.
+          More filters (name, email) can be added later if you want.
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      const inp = document.getElementById("globalSearchInput");
+      if (inp) {
+        inp.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            const q = (inp.value || "").trim();
+            window.location.href = "/search?q=" + encodeURIComponent(q);
+          }
+        });
+      }
+
+      async function post(url, payload) {
+        const res = await fetch(url, {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload || {}),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || "Request failed");
+        return data;
+      }
+
+      document.querySelectorAll(".js-follow").forEach((btn) => {
+        function setState(isFollowing) {
+          btn.dataset.following = isFollowing ? "1" : "0";
+          btn.textContent = isFollowing ? "Following" : "Follow";
+          btn.classList.toggle("primary", !isFollowing);
+        }
+        setState(btn.dataset.following === "1");
+
+        btn.addEventListener("click", async () => {
+          const userId = Number(btn.dataset.userId || "0") || 0;
+          const isFollowing = btn.dataset.following === "1";
+          btn.disabled = true;
+          try {
+            const data = await post(isFollowing ? "/api/unfollow" : "/api/follow", { user_id: userId });
+            setState(!!data.is_following);
+          } catch (e) {
+            alert(e.message || "Failed");
+          } finally {
+            btn.disabled = false;
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

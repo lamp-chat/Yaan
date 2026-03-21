@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="96" y1="80" x2="416" y2="448" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFE29A"/>
+      <stop offset="0.55" stop-color="#FFC94A"/>
+      <stop offset="1" stop-color="#FFB703"/>
+    </linearGradient>
+    <radialGradient id="shine" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+      gradientTransform="translate(196 150) rotate(90) scale(260 260)">
+      <stop offset="0" stop-color="white" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="56" y="56" width="400" height="400" rx="128" fill="url(#g)"/>
+  <rect x="56" y="56" width="400" height="400" rx="128" fill="url(#shine)"/>
+
+  <!-- Subtle highlight behind the letter -->
+  <path d="M176 156 L256 244 L336 156 M256 244 L256 360"
+        stroke="white" stroke-opacity="0.22" stroke-width="54"
+        stroke-linecap="round" stroke-linejoin="round"
+        transform="translate(-8,-8)"/>
+
+  <!-- Y mark -->
+  <path d="M176 156 L256 244 L336 156 M256 244 L256 360"
+        stroke="#15120D" stroke-opacity="0.88" stroke-width="54"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+

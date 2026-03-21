@@ -1,0 +1,419 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - Lamp</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand/ig_layout.css', v=static_v) }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand/nav.css', v=static_v) }}">
+  <script src="{{ url_for('static', filename='brand/nav.js', v=static_v) }}" defer></script>
+  <script src="{{ url_for('static', filename='brand/i18n.js', v=static_v) }}" defer></script>
+  <style>
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--ig-surface);
+      border: 1px solid var(--ig-border);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.04);
+    }
+
+    .settings-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px;
+      border-radius: 14px;
+      background:
+        radial-gradient(900px 240px at 10% 10%, rgba(255, 201, 74, 0.18), transparent 60%),
+        radial-gradient(900px 240px at 90% 0%, rgba(255, 183, 3, 0.14), transparent 60%),
+        linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.00));
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      margin-bottom: 12px;
+      animation: fadeUp 420ms ease both;
+    }
+
+    .settings-title {
+      font-weight: 1100;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+      line-height: 1.05;
+    }
+
+    .settings-sub {
+      color: var(--ig-muted);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .user-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      max-width: 260px;
+    }
+
+    .user-pill__avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      font-weight: 1100;
+      color: #14110a;
+      background: linear-gradient(140deg, rgba(255, 201, 74, 0.92), rgba(255, 237, 204, 0.92));
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      flex: 0 0 auto;
+    }
+
+    .user-pill__meta {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .user-pill__name {
+      font-weight: 1000;
+      font-size: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .user-pill__tag {
+      color: var(--ig-muted);
+      font-size: 11px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .row:last-child { border-bottom: 0; }
+
+    .k {
+      font-weight: 1000;
+    }
+
+    .v {
+      color: var(--ig-muted);
+      font-size: 13px;
+    }
+
+    .danger {
+      border-color: rgba(237, 73, 86, 0.35);
+      color: rgb(237, 73, 86);
+    }
+
+    .hint {
+      color: var(--ig-muted);
+      font-size: 12px;
+      line-height: 1.5;
+      margin-top: 10px;
+    }
+
+    .ig-btn.sm {
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+    }
+
+    .ig-btn.sm.active {
+      border-color: rgba(255, 183, 3, 0.60);
+      box-shadow: 0 0 0 3px rgba(255, 201, 74, 0.22);
+    }
+
+    .ig-select {
+      border: 1px solid var(--ig-border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      background: var(--ig-surface);
+      font-weight: 900;
+      color: var(--ig-text);
+      outline: none;
+      transition: box-shadow 180ms ease, transform 180ms ease, border-color 180ms ease;
+    }
+
+    .ig-select:focus { box-shadow: 0 0 0 3px rgba(255, 201, 74, 0.22); }
+
+    .ig-btn {
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    }
+
+    .ig-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    .ig-btn:active { transform: translateY(0); box-shadow: none; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: 1fr; }
+      .user-pill { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="ig-topbar" role="banner">
+    <div class="ig-topbar__inner">
+      <a class="ig-brand" href="/" data-nav aria-label="Lamp home">
+        <span class="ig-brand__word">Lamp</span>
+      </a>
+      <div class="ig-search">
+        <input class="ig-search__input" data-i18n-placeholder="search" placeholder="Search" data-i18n-aria-label="search" aria-label="Search">
+      </div>
+      <nav class="ig-actions" aria-label="Navigation">
+        <a class="ig-ico" href="/app" data-nav data-i18n-title="ai_chat" title="AI Chat" data-i18n-aria-label="ai_chat" aria-label="AI Chat"><span class="ig-ico__glyph">&#8962;</span></a>
+        <a class="ig-ico" href="/account" data-nav data-i18n-title="account" title="Account" data-i18n-aria-label="account" aria-label="Account"><span class="ig-ico__glyph">&#9786;</span></a>
+        <a class="ig-ico active" href="/settings" data-nav data-i18n-title="settings" title="Settings" data-i18n-aria-label="settings" aria-label="Settings"><span class="ig-ico__glyph">&#9881;</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="ig-page">
+    <div class="grid">
+      <section class="card">
+        <div class="settings-head">
+          <div>
+            <div class="settings-title" data-i18n="settings">Settings</div>
+            <div class="settings-sub" data-i18n="settings_sub">Make Lamp feel like yours: theme, language, chat defaults.</div>
+          </div>
+          <div class="user-pill" title="Signed in">
+            <div class="user-pill__avatar">{{ (display_name or profile.username or "U")[:1]|upper }}</div>
+            <div class="user-pill__meta">
+              <div class="user-pill__name">{{ display_name or profile.username }}</div>
+              <div class="user-pill__tag">{% if is_guest %}<span data-i18n="guest_session">Guest session</span>{% else %}<span data-i18n="signed_in">Signed in</span>{% endif %}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="k" data-i18n="appearance">Appearance</div>
+            <div class="v" data-i18n="appearance_sub">Theme and UI style</div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+            <button class="ig-btn sm" type="button" data-theme="ig">IG</button>
+            <button class="ig-btn sm" type="button" data-theme="lamp">Lamp</button>
+            <button class="ig-btn sm" type="button" data-theme="mint">Mint</button>
+            <button class="ig-btn sm" type="button" data-theme="noir">Noir</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="k" data-i18n="language">Language</div>
+            <div class="v" data-i18n="language_sub">Interface language</div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+            <button class="ig-btn sm" type="button" data-lang="en">EN</button>
+            <button class="ig-btn sm" type="button" data-lang="de">DE</button>
+            <button class="ig-btn sm" type="button" data-lang="hy">HY</button>
+            <button class="ig-btn sm" type="button" data-lang="ru">RU</button>
+            <button class="ig-btn sm" type="button" data-lang="fa">FA</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="k" data-i18n="mode">Mode</div>
+            <div class="v" data-i18n="mode_sub_default">Default AI chat mode</div>
+          </div>
+          <select id="modeDefault" class="ig-select">
+            <option value="normal" data-i18n="mode_opt_normal">Normal</option>
+            <option value="creative" data-i18n="mode_opt_creative">Creative</option>
+            <option value="coding" data-i18n="mode_opt_coding">Coding</option>
+            <option value="research" data-i18n="mode_opt_research">Research</option>
+            <option value="learning" data-i18n="mode_opt_learning">Learning</option>
+            <option value="business" data-i18n="mode_opt_business">Business</option>
+            <option value="teacher" data-i18n="mode_opt_teacher">Teacher</option>
+            <option value="brainstorm" data-i18n="mode_opt_brainstorm">Brainstorm</option>
+            <option value="translator" data-i18n="mode_opt_translator">Translator</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="k" data-i18n="ai_chat">AI Chat</div>
+            <div class="v" data-i18n="ai_chat_sub">Go back to the assistant</div>
+          </div>
+          <a class="ig-btn" href="/app" data-nav data-i18n="open">Open</a>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="k">Plan</div>
+            <div class="v">
+              {% set p = (billing.plan or "free")|lower %}
+              {% if p == "free" and (billing.free_daily_limit or 0) > 0 %}
+                Free · {{ billing.messages_used_today or 0 }} of {{ billing.free_daily_limit }} messages used today
+              {% else %}
+                {{ (billing.plan or "free")|upper }}{% if billing.subscription_status %} · {{ billing.subscription_status }}{% endif %}
+              {% endif %}
+            </div>
+          </div>
+          <a class="ig-btn" href="/upgrade" data-nav>Upgrade</a>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="k" data-i18n="account">Account</div>
+            <div class="v" data-i18n="account_sub">Profile photo and details</div>
+          </div>
+          <a class="ig-btn" href="/account" data-nav data-i18n="open">Open</a>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="k" data-i18n="feedback">Feedback</div>
+            <div class="v" data-i18n="feedback_sub">Send feedback and bug reports</div>
+          </div>
+          <a class="ig-btn" href="/feedback" data-nav data-i18n="open">Open</a>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="k" data-i18n="date_time">Date & time</div>
+            <div class="v" id="dtInfo">-</div>
+          </div>
+          <div class="v" id="tzInfo">-</div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="k" data-i18n="advanced">Advanced</div>
+            <div class="v" data-i18n="advanced_sub">Reset UI locks and cached flags</div>
+          </div>
+          <button class="ig-btn sm" id="clearLockBtn" type="button" data-i18n="clear_chat_lock">Clear chat lock</button>
+        </div>
+      </section>
+
+      <aside class="card">
+        <div style="font-weight:1000; font-size:16px;" data-i18n="session">Session</div>
+        <div class="hint" data-i18n="session_hint">Login is remembered by default. Logout is only available here (not sprinkled across the app).</div>
+        <form method="POST" action="/logout" style="margin-top:12px;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="ig-btn danger" type="submit" style="width:100%;" data-i18n="logout">Logout</button>
+        </form>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      const inp = document.querySelector(".ig-search__input");
+      if (!inp) return;
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          const q = (inp.value || "").trim();
+          window.location.href = "/search?q=" + encodeURIComponent(q);
+        }
+      });
+    })();
+  </script>
+
+  <script>
+    (function () {
+      const themeButtons = document.querySelectorAll("[data-theme]");
+      const langButtons = document.querySelectorAll("[data-lang]");
+      const clearLockBtn = document.getElementById("clearLockBtn");
+      const modeDefault = document.getElementById("modeDefault");
+      const dtInfo = document.getElementById("dtInfo");
+      const tzInfo = document.getElementById("tzInfo");
+
+      function setActive(list, key, fallback) {
+        let cur = fallback;
+        try { cur = (localStorage.getItem(key) || fallback).trim().toLowerCase() || fallback; } catch (e) {}
+        list.forEach((btn) => {
+          const v = String(btn.getAttribute(key === "pgpt_theme" ? "data-theme" : "data-lang") || "").trim().toLowerCase();
+          btn.classList.toggle("active", v === cur);
+        });
+      }
+
+      setActive(themeButtons, "pgpt_theme", "ig");
+      setActive(langButtons, "pgpt_lang", "en");
+
+      themeButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const theme = btn.getAttribute("data-theme") || "ig";
+          try { localStorage.setItem("pgpt_theme", theme); } catch (e) {}
+          window.location.href = "/app";
+        });
+      });
+
+      langButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const lang = btn.getAttribute("data-lang") || "en";
+          try { localStorage.setItem("pgpt_lang", lang); } catch (e) {}
+          try { window.dispatchEvent(new CustomEvent("pgpt:lang", { detail: { lang } })); } catch (e) {}
+          setActive(langButtons, "pgpt_lang", "en");
+        });
+      });
+
+      if (clearLockBtn) {
+        clearLockBtn.addEventListener("click", () => {
+          try {
+            const legacy = "pgpt_rate_limited_until_ms";
+            localStorage.removeItem(legacy);
+            // Clear all scoped keys, regardless of username casing.
+            Object.keys(localStorage).forEach((k) => {
+              if (k && k.startsWith("pgpt_rate_limited_until_ms:")) localStorage.removeItem(k);
+            });
+          } catch (e) {}
+          window.location.href = "/app";
+        });
+      }
+
+      if (modeDefault) {
+        try {
+          const saved = (localStorage.getItem("pgpt_mode") || "normal").trim().toLowerCase();
+          modeDefault.value = saved || "normal";
+        } catch (e) {}
+        modeDefault.addEventListener("change", () => {
+          try { localStorage.setItem("pgpt_mode", modeDefault.value); } catch (e) {}
+        });
+      }
+
+      function updateDT() {
+        try {
+          const tz = (Intl.DateTimeFormat().resolvedOptions().timeZone || "").trim();
+          if (tzInfo) tzInfo.textContent = tz ? ("TZ: " + tz) : "";
+        } catch (e) {}
+        try {
+          if (dtInfo) dtInfo.textContent = new Date().toLocaleString();
+        } catch (e) {}
+      }
+      updateDT();
+      setInterval(updateDT, 1000);
+    })();
+  </script>
+</body>
+</html>
+

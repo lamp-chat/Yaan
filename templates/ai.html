@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lamp AI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='ai/ai.css', v=static_v) }}">
+  <script src="{{ url_for('static', filename='brand/i18n.js', v=static_v) }}" defer></script>
+  <script>
+    window.__Lamp__ = {
+      username: {{ (username or "User")|tojson }},
+      displayName: {{ (display_name or username or "User")|tojson }},
+    };
+  </script>
+  <script src="{{ url_for('static', filename='ai/ai.js', v=static_v) }}" defer></script>
+</head>
+<body>
+  <div class="app" id="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="sb-top">
+        <a class="brand" href="/ai" title="Lamp">
+          <img class="brand__logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="Lamp">
+          <div class="brand__meta">
+            <div class="brand__name">Lamp</div>
+            <div class="brand__sub">AI Assistant</div>
+          </div>
+        </a>
+        <button class="icon-btn" id="newChatBtn" title="New chat" type="button">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+      </div>
+
+      <div class="sb-search">
+        <span class="sb-search__ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2"/><path d="M16.3 16.3 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </span>
+        <input id="chatSearch" class="sb-search__input" placeholder="Search chats and messages (Ctrl+K)" autocomplete="off">
+      </div>
+
+      <nav class="sb-list" id="chatList" aria-label="Chats"></nav>
+
+      <div class="sb-bottom">
+        <div class="me">
+          <div class="me__avatar" aria-hidden="true">{{ (display_name or username or "U")[:1]|upper }}</div>
+          <div class="me__meta">
+            <div class="me__name">{{ display_name or username }}</div>
+            <div class="me__hint">Settings in chat header</div>
+          </div>
+        </div>
+        <form method="POST" action="/logout">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="btn ghost" type="submit">Log out</button>
+        </form>
+      </div>
+    </aside>
+
+    <main class="main" id="main">
+      <header class="topbar">
+        <button class="icon-btn mobile-only" id="toggleSidebarBtn" type="button" title="Menu">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <button class="icon-btn mobile-only" id="openToolsBtn" type="button" title="Tools">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 15 8l6 .8-4.5 4 1.4 6.2L12 16.9 6.1 19l1.4-6.2L3 8.8 9 8l3-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          </span>
+        </button>
+
+        <div class="title">
+          <div class="title__name" id="chatTitle">New chat</div>
+          <div class="title__meta" id="chatMeta">Ready</div>
+        </div>
+
+        <div class="topbar__actions">
+          <select class="mode" id="modeSelect" title="AI mode">
+            <option value="normal">Normal</option>
+            <option value="creative">Creative</option>
+            <option value="coding">Coding</option>
+            <option value="research">Research</option>
+            <option value="learning">Learning</option>
+            <option value="business">Business</option>
+            <option value="translator">Translator</option>
+          </select>
+
+          <a class="btn primary" href="/upgrade" title="Upgrade to Pro">Upgrade</a>
+          <button class="btn ghost" id="pinBtn" type="button" title="Pin / unpin chat">Pin</button>
+          <button class="btn ghost" id="bookmarkBtn" type="button" title="Bookmark / unbookmark chat">Bookmark</button>
+          <button class="btn ghost" id="shareBtn" type="button" title="Share conversation">Share</button>
+          <button class="btn ghost" id="exportBtn" type="button" title="Export chat">Export</button>
+          <button class="btn ghost" id="renameBtn" type="button" title="Rename chat">Rename</button>
+          <button class="btn danger" id="deleteBtn" type="button" title="Delete chat">Delete</button>
+        </div>
+      </header>
+
+      <section class="thread" id="thread" aria-label="Chat messages">
+        <div class="thread__inner" id="messages"></div>
+        <button class="jump" id="jumpBtn" type="button" hidden>Jump to latest</button>
+      </section>
+
+      <section class="composer">
+        <div class="composer__inner">
+          <button class="icon-btn attach-btn" id="attachBtn" type="button" title="Attach file">
+            <span class="ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M21 12.5 12.6 20.9a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.8-8.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </button>
+          <textarea id="input" class="composer__input" placeholder="Message Lamp... (Ctrl+Enter to send)" rows="1"></textarea>
+          <button class="btn ghost" id="improveBtn" type="button" title="Improve prompt">Improve</button>
+          <button class="btn primary" id="sendBtn" type="button">Send</button>
+        </div>
+        <div class="composer__hint" id="composerHint">
+          Shortcuts: <span class="kbd">Ctrl</span>+<span class="kbd">Enter</span> send, <span class="kbd">Ctrl</span>+<span class="kbd">K</span> search, <span class="kbd">Ctrl</span>+<span class="kbd">N</span> new chat.
+        </div>
+      </section>
+    </main>
+
+    <aside class="right" id="right">
+      <div class="right__top">
+        <div class="right__title">Workspace</div>
+        <button class="icon-btn mobile-only" id="toggleRightBtn" type="button" title="Tools">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Workspace tabs">
+        <button class="tab active" data-tab="tools" type="button">Tools</button>
+        <button class="tab" data-tab="prompts" type="button">Prompts</button>
+        <button class="tab" data-tab="notes" type="button">Notes</button>
+        <button class="tab" data-tab="memory" type="button">Memory</button>
+        <button class="tab" data-tab="files" type="button">Files</button>
+      </div>
+
+      <section class="pane active" data-pane="tools">
+        <div class="card">
+          <div class="card__title">Quick Prompts</div>
+          <div class="card__row" id="quickPrompts"></div>
+          <div class="fine">Tip: click to insert, Shift+click to send.</div>
+        </div>
+
+        <div class="card">
+          <div class="card__title">Quick Actions</div>
+          <div class="card__row">
+            <button class="btn ghost full" id="summarizeConvBtn" type="button">Summarize Conversation</button>
+            <button class="btn ghost full" id="taskifyBtn" type="button">Turn Into Tasks</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__title">Experience</div>
+          <label class="toggle">
+            <input type="checkbox" id="soundToggle">
+            <span class="toggle__ui" aria-hidden="true"></span>
+            <span class="toggle__label">Sounds</span>
+          </label>
+          <div class="spacer-sm" aria-hidden="true"></div>
+          <label class="toggle">
+            <input type="checkbox" id="focusToggle">
+            <span class="toggle__ui" aria-hidden="true"></span>
+            <span class="toggle__label">Focus Mode</span>
+          </label>
+        </div>
+
+        <div class="card">
+          <div class="card__title">Mode System Prompt</div>
+          <textarea class="field" id="systemPrompt" placeholder="Optional: custom system prompt for this chat"></textarea>
+          <button class="btn ghost full" id="saveSystemBtn" type="button">Save System Prompt</button>
+        </div>
+
+        <div class="card">
+          <div class="card__title">Share</div>
+          <input class="field" id="shareUrl" placeholder="Create a share link" readonly>
+          <div class="card__row">
+            <button class="btn ghost full" id="createShareBtn" type="button">Create / Rotate Link</button>
+            <button class="btn ghost full" id="revokeShareBtn" type="button">Revoke Link</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="pane" data-pane="prompts">
+        <div class="card">
+          <div class="card__title">Saved Prompts</div>
+          <div class="list" id="promptList"></div>
+        </div>
+        <div class="card">
+          <div class="card__title">Add Prompt</div>
+          <input class="field" id="promptTitle" placeholder="Title">
+          <textarea class="field" id="promptBody" placeholder="Prompt template"></textarea>
+          <button class="btn ghost full" id="savePromptBtn" type="button">Save Prompt</button>
+        </div>
+      </section>
+
+      <section class="pane" data-pane="notes">
+        <div class="card">
+          <div class="card__title">Chat Notes</div>
+          <textarea class="field tall" id="notesBody" placeholder="Notes linked to this chat (autosaves)"></textarea>
+          <div class="fine" id="notesMeta">Not loaded</div>
+        </div>
+      </section>
+
+      <section class="pane" data-pane="memory">
+        <div class="card">
+          <div class="card__title">User Memory</div>
+          <div class="fine">Saved facts help Lamp across chats.</div>
+          <div class="list" id="memoryList"></div>
+        </div>
+        <div class="card">
+          <div class="card__title">Add Memory</div>
+          <textarea class="field" id="memoryText" placeholder="Example: My name is Erik. I prefer concise answers. My timezone is Europe/Berlin."></textarea>
+          <button class="btn ghost full" id="saveMemoryBtn" type="button">Save Memory</button>
+        </div>
+      </section>
+
+      <section class="pane" data-pane="files">
+        <div class="card">
+          <div class="card__title">Attachments</div>
+          <input type="file" id="fileInput" hidden>
+          <button class="btn ghost full" id="uploadBtn" type="button">Upload File</button>
+          <div class="list" id="fileList"></div>
+        </div>
+        <div class="card">
+          <div class="card__title">Analyze File</div>
+          <select class="field" id="analyzeFileSelect"></select>
+          <textarea class="field" id="analyzeQuestion" placeholder="Ask a question about the selected file"></textarea>
+          <label class="check">
+            <input type="checkbox" id="appendAnalysis">
+            <span>Append result to chat</span>
+          </label>
+          <button class="btn ghost full" id="analyzeBtn" type="button">Analyze</button>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <div class="modal" id="paywall" hidden aria-hidden="true">
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__card" role="dialog" aria-modal="true" aria-label="Upgrade to Pro">
+      <div class="modal__top">
+        <div class="modal__title">Daily limit reached</div>
+        <button class="icon-btn" type="button" data-close aria-label="Close">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+      </div>
+      <div class="modal__body">
+        <div class="modal__text" id="paywallText">Upgrade to Pro to continue chatting.</div>
+        <div class="modal__fine" id="paywallFine"></div>
+      </div>
+      <div class="modal__actions">
+        <a class="btn primary" href="/upgrade">Upgrade to Pro</a>
+        <button class="btn ghost" type="button" data-close>Not now</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
+</body>
+</html>

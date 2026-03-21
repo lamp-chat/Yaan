@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Feedback - Lamp</title>
+  <meta name="robots" content="noindex, nofollow">
+  <style>
+    :root {
+      --bg0: #070708;
+      --bg1: #0b0b0c;
+      --text: rgba(251, 246, 232, 0.96);
+      --muted: rgba(214, 204, 176, 0.76);
+      --muted2: rgba(214, 204, 176, 0.58);
+      --border: rgba(255, 201, 74, 0.18);
+      --border2: rgba(255, 201, 74, 0.10);
+      --panel: rgba(12, 12, 12, 0.74);
+      --panel2: rgba(18, 18, 18, 0.86);
+      --accent: #ffc94a;
+      --accent2: #ffb703;
+      --danger: rgba(255, 90, 90, 0.24);
+      --ok: rgba(70, 200, 130, 0.16);
+      --shadow: rgba(0, 0, 0, 0.55);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --sans: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+      --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(900px 620px at 12% 10%, rgba(255, 201, 74, 0.20) 0%, transparent 60%),
+        radial-gradient(820px 680px at 88% 90%, rgba(255, 183, 3, 0.10) 0%, transparent 60%),
+        radial-gradient(640px 420px at 62% 12%, rgba(255, 255, 255, 0.04) 0%, transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg0));
+    }
+
+    .wrap { padding: 18px; }
+
+    .top {
+      max-width: 1200px;
+      margin: 0 auto 12px;
+      border: 1px solid var(--border2);
+      background: var(--panel);
+      border-radius: 18px;
+      padding: 14px 14px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 26px 70px var(--shadow);
+    }
+
+    .brandRow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .logoWrap {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 201, 74, 0.35);
+      background: radial-gradient(circle at 30% 30%, var(--accent), var(--accent2));
+      box-shadow: 0 14px 26px rgba(0, 0, 0, 0.28);
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .logoWrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .title {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .title strong {
+      font-family: var(--serif);
+      letter-spacing: 0.02em;
+      color: rgba(255, 232, 170, 0.98);
+      font-size: 16px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .title span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .chip {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: rgba(255, 246, 220, 0.92);
+      border: 1px solid rgba(255, 201, 74, 0.22);
+      background: rgba(10, 10, 10, 0.55);
+      border-radius: 999px;
+      padding: 7px 10px;
+      white-space: nowrap;
+    }
+
+    .toolbar {
+      width: 100%;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .toolsLeft, .toolsRight {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .field {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255, 201, 74, 0.16);
+      background: rgba(10, 10, 10, 0.48);
+      border-radius: 14px;
+      padding: 10px 12px;
+      min-width: 260px;
+    }
+
+    .field small {
+      color: var(--muted2);
+      font-weight: 650;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .field input[type="search"] {
+      all: unset;
+      flex: 1 1 auto;
+      min-width: 160px;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .field input[type="search"]::placeholder { color: rgba(214, 204, 176, 0.40); }
+
+    .select {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255, 201, 74, 0.16);
+      background: rgba(10, 10, 10, 0.48);
+      border-radius: 14px;
+      padding: 10px 12px;
+    }
+
+    .select label {
+      color: var(--muted2);
+      font-weight: 650;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-size: 12px;
+    }
+
+    .select select {
+      border: 0;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      font-weight: 650;
+      font-family: var(--mono);
+      cursor: pointer;
+    }
+
+    .select select option { background: #0b0b0c; color: var(--text); }
+
+    a.btn, button.btn {
+      appearance: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255, 201, 74, 0.18);
+      border-radius: 14px;
+      padding: 10px 12px;
+      text-decoration: none;
+      color: var(--text);
+      background: rgba(10, 10, 10, 0.56);
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    a.btn.primary, button.btn.primary {
+      border: 0;
+      color: #14110a;
+      background: linear-gradient(140deg, var(--accent), var(--accent2));
+    }
+
+    button.btn.danger {
+      border-color: rgba(255, 90, 90, 0.35);
+      background: rgba(255, 90, 90, 0.10);
+      color: rgba(255, 224, 224, 0.98);
+    }
+
+    button.btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .card {
+      max-width: 1200px;
+      margin: 0 auto;
+      border: 1px solid var(--border2);
+      background: var(--panel2);
+      border-radius: 18px;
+      padding: 14px;
+      overflow: auto;
+    }
+
+    .err, .ok {
+      margin: 0 0 12px;
+      padding: 10px 11px;
+      border-radius: 14px;
+      font-size: 14px;
+    }
+
+    .err {
+      border: 1px solid rgba(255, 90, 90, 0.35);
+      background: var(--danger);
+      color: rgba(255, 224, 224, 0.95);
+    }
+
+    .ok {
+      border: 1px solid rgba(120, 235, 170, 0.30);
+      background: var(--ok);
+      color: rgba(210, 255, 235, 0.95);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 980px;
+    }
+
+    th, td {
+      border-bottom: 1px solid rgba(255, 201, 74, 0.14);
+      padding: 10px 10px;
+      vertical-align: top;
+      font-size: 13px;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: rgba(12, 12, 12, 0.96);
+      text-align: left;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 11px;
+      color: rgba(255, 246, 220, 0.92);
+      z-index: 1;
+    }
+
+    code {
+      font-family: var(--mono);
+      color: rgba(255, 246, 220, 0.92);
+    }
+
+    .muted { color: var(--muted); }
+    .msg { white-space: pre-wrap; line-height: 1.45; }
+
+    .rowActions {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .tiny {
+      appearance: none;
+      border: 1px solid rgba(255, 201, 74, 0.16);
+      background: rgba(10, 10, 10, 0.52);
+      color: rgba(255, 246, 220, 0.92);
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    .tiny.danger {
+      border-color: rgba(255, 90, 90, 0.35);
+      background: rgba(255, 90, 90, 0.10);
+      color: rgba(255, 224, 224, 0.98);
+    }
+
+    .tiny:active { transform: translateY(1px); }
+
+    .check {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+    }
+
+    .toast {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      max-width: min(520px, calc(100vw - 28px));
+      border: 1px solid rgba(255, 201, 74, 0.18);
+      background: rgba(12, 12, 12, 0.78);
+      backdrop-filter: blur(12px);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 12px 12px;
+      box-shadow: 0 26px 70px var(--shadow);
+      display: none;
+    }
+
+    .toast strong { color: rgba(255, 232, 170, 0.98); font-family: var(--serif); }
+    .toast .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+    @media (max-width: 860px) {
+      .wrap { padding: 14px; }
+      .field { min-width: 0; flex: 1 1 260px; }
+
+      /* Turn the table into stacked cards (no horizontal scroll). */
+      table { min-width: 0; }
+      thead { display: none; }
+      tbody, tr, td { display: block; width: 100%; }
+      tr {
+        border: 1px solid rgba(255, 201, 74, 0.14);
+        background: rgba(10, 10, 10, 0.40);
+        border-radius: 16px;
+        padding: 12px;
+        margin: 10px 0;
+      }
+      td {
+        border-bottom: 0;
+        padding: 8px 0;
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 10px;
+      }
+      td::before {
+        content: attr(data-label);
+        color: var(--muted2);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 750;
+      }
+      td[data-label="Message"] { grid-template-columns: 1fr; }
+      td[data-label="Message"]::before { margin-bottom: 6px; }
+      td[data-label="Actions"] { grid-template-columns: 1fr; }
+      td[data-label="Actions"]::before { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div class="brandRow">
+        <div class="brand">
+          <div class="logoWrap">
+            <img src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="Lamp logo">
+          </div>
+          <div class="title">
+            <strong>Admin Feedback</strong>
+            <span class="muted">Showing <code id="shownCount">{{ rows|length }}</code> (limit=<code>{{ limit }}</code>)</span>
+          </div>
+        </div>
+        <div class="chip" title="Authenticated by ADMIN_TOKEN">token-gated</div>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolsLeft">
+          <div class="field" title="Search across username, email, category, message, page, tz, ip">
+            <small>Search</small>
+            <input id="q" type="search" placeholder="type to filter..." autocomplete="off" spellcheck="false">
+          </div>
+
+          <div class="select" title="Reload with a different LIMIT">
+            <label for="limitSel">Limit</label>
+            <select id="limitSel">
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="200">200</option>
+              <option value="500">500</option>
+              <option value="1000">1000</option>
+              <option value="2000">2000</option>
+            </select>
+          </div>
+
+          <button id="bulkDeleteBtn" class="btn danger" type="button" disabled title="Delete selected feedback items">Delete selected</button>
+          <button id="clearSelBtn" class="btn" type="button" disabled>Clear selection</button>
+        </div>
+
+        <div class="toolsRight">
+          <a class="btn" href="/feedback">Public feedback</a>
+          <a class="btn" href="/app">Open chat</a>
+          <a class="btn primary" href="/admin/feedback.csv?limit={{ limit }}{% if token %}&token={{ token|urlencode }}{% endif %}">Download CSV</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="card">
+      {% if error %}
+        <div class="err">{{ error }}</div>
+      {% endif %}
+      {% if message %}
+        <div class="ok" id="serverMessage">{{ message }}</div>
+      {% endif %}
+
+      <form id="bulkForm" method="POST" action="/admin/feedback/delete{% if token %}?token={{ token|urlencode }}{% endif %}" data-confirm="Delete selected feedback items? This cannot be undone.">
+        <input type="hidden" name="ids" id="bulkIds" value="">
+        <input type="hidden" name="limit" value="{{ limit }}">
+      </form>
+
+      <table aria-label="Feedback table">
+        <thead>
+          <tr>
+            <th style="width: 44px;"><input id="checkAll" class="check" type="checkbox" title="Select all"></th>
+            <th>ID</th>
+            <th>Created</th>
+            <th>User</th>
+            <th>Category</th>
+            <th>Rating</th>
+            <th>Message</th>
+            <th>Page</th>
+            <th>TZ</th>
+            <th>IP</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+            <tr data-row="1">
+              <td data-label="Select">
+                <input class="check rowCheck" type="checkbox" data-id="{{ r.id }}" aria-label="Select feedback {{ r.id }}">
+              </td>
+              <td data-label="ID"><code>#{{ r.id }}</code></td>
+              <td data-label="Created"><code>{{ r.created_at_utc }}</code></td>
+              <td data-label="User">
+                <div><code>{{ r.username }}</code></div>
+                {% if r.contact_email %}<div class="muted">{{ r.contact_email }}</div>{% endif %}
+              </td>
+              <td data-label="Category"><code>{{ r.category }}</code></td>
+              <td data-label="Rating"><code>{{ r.rating }}</code></td>
+              <td data-label="Message" class="msg">{{ r.message }}</td>
+              <td data-label="Page" class="muted">{{ r.page }}</td>
+              <td data-label="TZ"><code>{{ r.tz }}</code></td>
+              <td data-label="IP"><code>{{ r.ip }}</code></td>
+              <td data-label="Actions">
+                <div class="rowActions">
+                  <button class="tiny" type="button" data-copy="{{ r.contact_email }}">Copy email</button>
+                  <button class="tiny" type="button" data-copy="{{ r.ip }}">Copy IP</button>
+                  <form method="POST" action="/admin/feedback/delete{% if token %}?token={{ token|urlencode }}{% endif %}" data-confirm="Delete feedback #{{ r.id }}? This cannot be undone." style="margin:0;">
+                    <input type="hidden" name="id" value="{{ r.id }}">
+                    <input type="hidden" name="limit" value="{{ limit }}">
+                    <button class="tiny danger" type="submit">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      function qs(sel) { return document.querySelector(sel); }
+      function qsa(sel) { return document.querySelectorAll(sel); }
+
+      function toast(title, sub) {
+        var t = qs("#toast");
+        if (!t) { return; }
+        var h = qs("#toastTitle");
+        var s = qs("#toastSub");
+        if (h) { h.textContent = title || ""; }
+        if (s) { s.textContent = sub || ""; }
+        t.style.display = "block";
+        window.clearTimeout(window.__toastTimer);
+        window.__toastTimer = window.setTimeout(function () {
+          t.style.display = "none";
+        }, 2600);
+      }
+
+      // Confirm delete forms (single + bulk).
+      var forms = qsa("form[data-confirm]");
+      for (var i = 0; i < forms.length; i++) {
+        forms[i].addEventListener("submit", function (e) {
+          var msg = this.getAttribute("data-confirm") || "Are you sure?";
+          if (!window.confirm(msg)) { e.preventDefault(); }
+        });
+      }
+
+      // Limit selector (reload).
+      var limitSel = qs("#limitSel");
+      if (limitSel) {
+        limitSel.value = String({{ limit|int }});
+        limitSel.addEventListener("change", function () {
+          var lim = this.value || "200";
+          var url = "/admin/feedback?limit=" + encodeURIComponent(lim) + "{% if token %}&token={{ token|urlencode }}{% endif %}";
+          window.location.href = url;
+        });
+      }
+
+      // Copy buttons.
+      var copyBtns = qsa("[data-copy]");
+      for (var c = 0; c < copyBtns.length; c++) {
+        copyBtns[c].addEventListener("click", function () {
+          var val = (this.getAttribute("data-copy") || "").trim();
+          if (!val) { toast("Nothing to copy", ""); return; }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(val).then(function () {
+              toast("Copied", val);
+            }).catch(function () {
+              toast("Copy failed", "Browser blocked clipboard");
+            });
+          } else {
+            toast("Copy not supported", "Use a modern browser");
+          }
+        });
+      }
+
+      // Client-side filter.
+      var q = qs("#q");
+      var rows = qsa("tr[data-row]");
+      var shownCount = qs("#shownCount");
+      function applyFilter() {
+        var needle = (q && q.value ? q.value : "").trim().toLowerCase();
+        var shown = 0;
+        for (var r = 0; r < rows.length; r++) {
+          var tr = rows[r];
+          var hay = (tr.textContent || "").toLowerCase();
+          var ok = !needle || (hay.indexOf(needle) >= 0);
+          tr.style.display = ok ? "" : "none";
+          if (ok) { shown++; }
+        }
+        if (shownCount) { shownCount.textContent = String(shown); }
+      }
+      if (q) { q.addEventListener("input", applyFilter); }
+
+      // Selection + bulk delete.
+      var checkAll = qs("#checkAll");
+      var rowChecks = qsa(".rowCheck");
+      var bulkDeleteBtn = qs("#bulkDeleteBtn");
+      var clearSelBtn = qs("#clearSelBtn");
+      var bulkForm = qs("#bulkForm");
+      var bulkIds = qs("#bulkIds");
+
+      function selectedIds() {
+        var ids = [];
+        for (var i2 = 0; i2 < rowChecks.length; i2++) {
+          var cb = rowChecks[i2];
+          if (cb && cb.checked) {
+            var id = cb.getAttribute("data-id");
+            if (id) { ids.push(id); }
+          }
+        }
+        return ids;
+      }
+
+      function syncSelectionUi() {
+        var ids = selectedIds();
+        var has = ids.length > 0;
+        if (bulkDeleteBtn) { bulkDeleteBtn.disabled = !has; }
+        if (clearSelBtn) { clearSelBtn.disabled = !has; }
+        if (checkAll) {
+          checkAll.checked = has && ids.length === rowChecks.length;
+          checkAll.indeterminate = has && ids.length !== rowChecks.length;
+        }
+      }
+
+      if (checkAll) {
+        checkAll.addEventListener("change", function () {
+          var v = !!this.checked;
+          for (var i3 = 0; i3 < rowChecks.length; i3++) {
+            rowChecks[i3].checked = v;
+          }
+          syncSelectionUi();
+        });
+      }
+      for (var i4 = 0; i4 < rowChecks.length; i4++) {
+        rowChecks[i4].addEventListener("change", syncSelectionUi);
+      }
+      if (clearSelBtn) {
+        clearSelBtn.addEventListener("click", function () {
+          for (var i5 = 0; i5 < rowChecks.length; i5++) { rowChecks[i5].checked = false; }
+          syncSelectionUi();
+          toast("Selection cleared", "");
+        });
+      }
+      if (bulkDeleteBtn && bulkForm && bulkIds) {
+        bulkDeleteBtn.addEventListener("click", function () {
+          var ids = selectedIds();
+          if (!ids.length) { return; }
+          bulkIds.value = ids.join(",");
+          bulkForm.submit();
+        });
+      }
+
+      syncSelectionUi();
+      applyFilter();
+
+      // If server sent a message, show it as toast too.
+      var sm = qs("#serverMessage");
+      if (sm && sm.textContent) {
+        toast("Admin", sm.textContent);
+      }
+    })();
+  </script>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">
+    <strong id="toastTitle"></strong>
+    <div id="toastSub" class="sub"></div>
+  </div>
+</body>
+</html>
+
