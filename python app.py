@@ -2766,6 +2766,31 @@ def canned_about_app_reply(user_message: str) -> str | None:
     return None
 
 
+def canned_easter_egg_reply(user_message: str) -> str | None:
+    """
+    Small deterministic "easter egg" replies for exact phrases.
+    Keep this strict to avoid surprising users.
+    """
+
+    def norm(s: str) -> str:
+        s = (s or "").strip().lower()
+        if not s:
+            return ""
+        # Strip punctuation (including '@') so simple variants still match.
+        s = re.sub(r"[^\w\s]+", " ", s, flags=re.UNICODE)
+        s = re.sub(r"\s+", " ", s, flags=re.UNICODE).strip()
+        return s
+
+    s = norm(user_message or "")
+    if not s:
+        return None
+
+    if s == "eroi pupul chapi":
+        return "Papa xeloq mna eli"
+
+    return None
+
+
 def get_user_daily_limit_override(user_id: int) -> int | None:
     """Per-user override for FREE plan daily message limit. None means use global FREE_DAILY_MESSAGE_LIMIT."""
     conn = get_conn()
@@ -2992,6 +3017,10 @@ def login_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         if "user_id" not in session:
+            # API calls should not receive HTML redirects (fetch will follow them and clients
+            # may mis-handle the response). Return JSON 401 instead.
+            if request.path.startswith("/api/"):
+                return jsonify({"error": "Please login first."}), 401
             if request.path.startswith("/chat") or request.path.startswith("/reset"):
                 return jsonify({"error": "Please login first."}), 401
             return redirect(url_for("auth_page"))
@@ -4114,7 +4143,7 @@ def api_ai_stream(conversation_id: int):
     else:
         inserted_user_message_id = None
 
-    special = canned_about_app_reply(message)
+    special = canned_easter_egg_reply(message) or canned_about_app_reply(message)
     if special:
         def gen_special():
             try:
@@ -4947,7 +4976,7 @@ def chat():
     if not ok:
         return jsonify({"error": "Daily free limit reached. Upgrade to Pro.", "quota": quota}), 429
 
-    special = canned_about_app_reply(user_message)
+    special = canned_easter_egg_reply(user_message) or canned_about_app_reply(user_message)
     if special:
         chat_id = str(request.json.get("chat_id", "default")).strip() or "default"
         mode = str(request.json.get("mode", "normal")).strip().lower()
