@@ -33,11 +33,14 @@ def main() -> None:
     port = int(os.getenv("PORT", "5000"))
     debug = os.getenv("FLASK_DEBUG", "0") == "1"
     if socketio is not None:
-        socketio.run(app, host=host, port=port, debug=debug)
+        # Flask-SocketIO blocks running with Werkzeug in "production" unless explicitly allowed.
+        # Render's default start command often uses this entrypoint; keep it working without
+        # requiring eventlet/gevent. If you later move to gunicorn+eventlet/gevent, you can
+        # remove this.
+        socketio.run(app, host=host, port=port, debug=debug, allow_unsafe_werkzeug=True)
     else:
         app.run(host=host, port=port, debug=debug)
 
 
 if __name__ == "__main__":
     main()
-

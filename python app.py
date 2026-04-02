@@ -5669,6 +5669,7 @@ if __name__ == "__main__":
     port = int(os.getenv("PORT", "5000"))
     debug = os.getenv("FLASK_DEBUG", "0") == "1"
     if socketio is not None:
-        socketio.run(app, host=host, port=port, debug=debug)
+        # Flask-SocketIO blocks running with Werkzeug in "production" unless explicitly allowed.
+        socketio.run(app, host=host, port=port, debug=debug, allow_unsafe_werkzeug=True)
     else:
-         app.run(host=host, port=port, debug=debug)
+        app.run(host=host, port=port, debug=debug)
