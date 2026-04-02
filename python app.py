@@ -3304,14 +3304,16 @@ def login():
     return redirect(url_for("auth_page", error="Login is handled by Firebase. Please sign in with Firebase."))
 
 
-@app.route("/logout", methods=["POST"])
+@app.route("/logout", methods=["GET", "POST"])
 def logout():
-    require_csrf()
+    # Logout is intentionally CSRF-tolerant.
+    # On long-lived pages (or after instance restarts), CSRF/session cookies can get out of sync,
+    # which would make logout appear "broken". Logout CSRF is low risk, so prioritize reliability.
     user_id = session.get("user_id")
     if user_id in conversations:
         conversations.pop(user_id, None)
     session.clear()
-    return redirect(url_for("auth_page"))
+    return redirect(url_for("auth_page", message="Logged out."))
 
 
 @app.route("/email-login/request", methods=["POST"])
