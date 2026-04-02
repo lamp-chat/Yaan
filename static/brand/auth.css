@@ -274,6 +274,7 @@ html[data-theme="dark"] .btn.google{
   box-shadow: inset 0 0 0 1px rgba(17,24,39,0.08);
 }
 .btn.google .g-ico svg{ width: 18px; height: 18px; display: block; }
+.btn.google .g-ico img{ width: 18px; height: 18px; display: block; object-fit: contain; }
 
 .theme-ico .moon{ display:none; }
 html[data-theme="dark"] .theme-ico .moon{ display:block; }
