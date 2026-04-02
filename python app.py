@@ -56,6 +56,23 @@ app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-insecure-secret-change-me")
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_HTTPONLY"] = True
+# Optional: set cookie domain so sessions survive apex <-> www redirects in production.
+# Recommended: set PUBLIC_BASE_URL=https://yourdomain.tld and this will auto-configure.
+_cookie_domain = (os.getenv("COOKIE_DOMAIN") or "").strip()
+if not _cookie_domain:
+    try:
+        _pub = str(os.getenv("PUBLIC_BASE_URL") or "").strip()
+        if _pub:
+            host = (urlsplit(_pub).hostname or "").strip().lower()
+            if host.startswith("www."):
+                host = host[4:]
+            # Avoid setting cookie domain for localhost/IPs or shared hosting domains like onrender.com.
+            if host and ("." in host) and (host not in {"localhost"}) and (not re.fullmatch(r"\d+\.\d+\.\d+\.\d+", host)) and (not host.endswith(".onrender.com")):
+                _cookie_domain = host
+    except Exception:
+        _cookie_domain = ""
+if _cookie_domain:
+    app.config["SESSION_COOKIE_DOMAIN"] = _cookie_domain
 # If you deploy behind HTTPS, set this env var to "1" so cookies are secure.
 # In local dev (HTTP on LAN IP), Secure cookies would break login/session on phones.
 _debug_env = (os.getenv("FLASK_DEBUG", "0") == "1")
@@ -1566,7 +1583,17 @@ def _billing_firestore_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _billing_firestore_ensure_user(uid: str, email: str, *, user_id: int | None = None, plan_hint: str = FREE_PLAN) -> dict[str, Any] | None:
+def _billing_firestore_ensure_user(
+    uid: str,
+    email: str,
+    *,
+    user_id: int | None = None,
+    plan_hint: str = FREE_PLAN,
+    username: str = "",
+    display_name: str = "",
+    last_login_at_utc: str = "",
+    last_login_ip: str = "",
+) -> dict[str, Any] | None:
     """
     Ensure a billing doc exists. Returns the doc dict (best-effort).
     """
@@ -1595,6 +1622,14 @@ def _billing_firestore_ensure_user(uid: str, email: str, *, user_id: int | None 
         }
         if user_id is not None:
             base["local_user_id"] = int(user_id)
+        if username:
+            base["username"] = str(username)
+        if display_name:
+            base["display_name"] = str(display_name)
+        if last_login_at_utc:
+            base["last_login_at_utc"] = str(last_login_at_utc)
+        if last_login_ip:
+            base["last_login_ip"] = str(last_login_ip)
         if not snap.exists:
             doc.set(base, merge=True)
             return base
@@ -1605,6 +1640,14 @@ def _billing_firestore_ensure_user(uid: str, email: str, *, user_id: int | None 
             updates["email"] = email.strip().lower()
         if user_id is not None and (existing.get("local_user_id") is None):
             updates["local_user_id"] = int(user_id)
+        if username and (str(existing.get("username") or "").strip() != str(username).strip()):
+            updates["username"] = str(username).strip()
+        if display_name and (str(existing.get("display_name") or "").strip() != str(display_name).strip()):
+            updates["display_name"] = str(display_name).strip()
+        if last_login_at_utc:
+            updates["last_login_at_utc"] = str(last_login_at_utc)
+        if last_login_ip:
+            updates["last_login_ip"] = str(last_login_ip)
         # First write: if plan_type missing, seed with hint.
         if not str(existing.get("plan_type") or "").strip():
             updates["plan_type"] = (plan_hint or FREE_PLAN).strip().lower() or FREE_PLAN
@@ -3230,9 +3273,19 @@ def firebase_session_login():
     session.permanent = True
     conversations.setdefault(user_id, {})
 
-    # Best-effort: seed Firestore billing doc for this Firebase user (plan/usage/subscription).
+    # Best-effort: seed Firestore billing doc for this Firebase user (plan/usage/subscription),
+    # and mirror basic profile fields so admin views can remain accurate across deploys.
     try:
-        _billing_firestore_ensure_user(uid, email, user_id=int(user_id), plan_hint=get_user_plan(int(user_id)))
+        _billing_firestore_ensure_user(
+            uid,
+            email,
+            user_id=int(user_id),
+            plan_hint=get_user_plan(int(user_id)),
+            username=str(username or "").strip(),
+            display_name=str(ui_name or "").strip(),
+            last_login_at_utc=str(now_iso or "").strip(),
+            last_login_ip=str(ip or "").strip(),
+        )
     except Exception:
         pass
 
@@ -5412,6 +5465,50 @@ def admin_users():
             )
     finally:
         conn.close()
+
+    # Best-effort: merge Firestore-backed users so the admin panel still shows newly
+    # registered users if the local SQLite DB was reset (e.g. Render redeploy/restart).
+    try:
+        client = _billing_firestore_client()
+        if client is not None and gc_firestore is not None:
+            col_name = str(os.getenv("FIRESTORE_BILLING_COLLECTION") or "billing_users").strip() or "billing_users"
+            seen = {int(u.get("id") or 0) for u in users if int(u.get("id") or 0) > 0}
+            q_fs = client.collection(col_name).order_by("updated_at_utc", direction=gc_firestore.Query.DESCENDING).limit(int(limit))
+            for doc in q_fs.stream():
+                d = doc.to_dict() or {}
+                lid = d.get("local_user_id")
+                try:
+                    lid_i = int(lid) if lid is not None and str(lid).strip() else 0
+                except Exception:
+                    lid_i = 0
+                if lid_i and lid_i in seen:
+                    continue
+                uid_fs = str(d.get("uid") or doc.id or "").strip()
+                email_fs = str(d.get("email") or "").strip()
+                username_fs = str(d.get("username") or "").strip()
+                if not (uid_fs or email_fs or username_fs):
+                    continue
+                users.append(
+                    {
+                        "id": lid_i,
+                        "username": username_fs,
+                        "email": email_fs,
+                        "plan": str(d.get("plan_type") or "").strip().lower() or FREE_PLAN,
+                        "tz": normalize_tz_name(str(d.get("tz") or "")) or "",
+                        "created_at_utc": str(d.get("created_at_utc") or "").strip(),
+                        "last_login_at_utc": str(d.get("last_login_at_utc") or "").strip(),
+                        "last_login_ip": str(d.get("last_login_ip") or "").strip(),
+                        "daily_limit_override": None,
+                        "effective_limit": int(FREE_DAILY_MESSAGE_LIMIT),
+                        "used_today": 0,
+                        "reset_at": "",
+                        "firebase_uid": uid_fs,
+                        "firestore_only": True,
+                    }
+                )
+            users.sort(key=lambda x: int(x.get("id") or 0), reverse=True)
+    except Exception:
+        pass
 
     return render_template(
         "admin_users.html",
