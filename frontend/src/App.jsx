@@ -269,6 +269,7 @@ export default function App() {
       return;
     }
     let convId = activeId || null;
+    const firstTurn = !messages || messages.length === 0;
     if (!convId) {
       try {
         convId = await createConversation({ title: "", clearDraft: false });
@@ -291,65 +292,89 @@ export default function App() {
     sfx.play("send");
 
     try {
-      const res = await fetch(`/api/ai/conversations/${convId}/stream`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        signal: aborter.signal,
-        body: JSON.stringify({ message: text, mode, regenerate: false, tz: tzName() }),
-      });
-
-      if (!res.ok) {
-        let err = null;
-        try { err = await res.json(); } catch {}
-        const msg = (err && err.error) ? err.error : `Request failed (${res.status})`;
-        throw Object.assign(new Error(msg), { status: res.status, data: err });
-      }
-
-      const reader = res.body.getReader();
-      const dec = new TextDecoder();
-      let buf = "";
-      let acc = "";
-
-      const updateAssistant = (val) => {
-        acc = val;
-        setMessages((m) => {
-          const copy = m.slice();
-          const i = copy.findIndex((x) => x.id === tmpAsst.id);
-          if (i >= 0) copy[i] = { ...copy[i], content: acc };
-          return copy;
+      // Streaming can be flaky on some first-load cases. Use a simple non-stream fallback for the first turn.
+      if (firstTurn) {
+        const res = await fetch(`/api/ai/conversations/${convId}/send`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          signal: aborter.signal,
+          body: JSON.stringify({ message: text, mode, regenerate: false, tz: tzName() }),
         });
-      };
-
-      let doneObj = null;
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += dec.decode(value, { stream: true });
-        let idx;
-        while ((idx = buf.indexOf("\n")) >= 0) {
-          const line = buf.slice(0, idx).trim();
-          buf = buf.slice(idx + 1);
-          if (!line) continue;
-          let obj = null;
-          try { obj = JSON.parse(line); } catch { continue; }
-          if (obj.type === "delta") {
-            updateAssistant(acc + String(obj.delta || ""));
-          } else if (obj.type === "done") {
-            doneObj = obj;
-          } else if (obj.type === "error") {
-            throw new Error(String(obj.error || "Stream error"));
-          }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          const msg = (data && data.error) ? data.error : `Request failed (${res.status})`;
+          throw Object.assign(new Error(msg), { status: res.status, data });
         }
-      }
-
-      if (doneObj && doneObj.assistant) {
-        const assistant = doneObj.assistant;
+        const assistant = data.assistant;
         setMessages((m) => m.map((x) => (x.id === tmpAsst.id ? assistant : x)));
-        if (doneObj.conversation) {
-          setConversations((prev) => prev.map((c) => (c.id === doneObj.conversation.id ? { ...c, ...doneObj.conversation } : c)));
+        if (data.conversation) {
+          setConversations((prev) => prev.map((c) => (c.id === data.conversation.id ? { ...c, ...data.conversation } : c)));
         }
         sfx.play("receive");
+      } else {
+        const res = await fetch(`/api/ai/conversations/${convId}/stream`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          signal: aborter.signal,
+          body: JSON.stringify({ message: text, mode, regenerate: false, tz: tzName() }),
+        });
+
+        if (!res.ok) {
+          let err = null;
+          try { err = await res.json(); } catch {}
+          const msg = (err && err.error) ? err.error : `Request failed (${res.status})`;
+          throw Object.assign(new Error(msg), { status: res.status, data: err });
+        }
+
+        if (!res.body) throw new Error("Streaming not supported in this browser context.");
+
+        const reader = res.body.getReader();
+        const dec = new TextDecoder();
+        let buf = "";
+        let acc = "";
+
+        const updateAssistant = (val) => {
+          acc = val;
+          setMessages((m) => {
+            const copy = m.slice();
+            const i = copy.findIndex((x) => x.id === tmpAsst.id);
+            if (i >= 0) copy[i] = { ...copy[i], content: acc };
+            return copy;
+          });
+        };
+
+        let doneObj = null;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += dec.decode(value, { stream: true });
+          let idx;
+          while ((idx = buf.indexOf("\n")) >= 0) {
+            const line = buf.slice(0, idx).trim();
+            buf = buf.slice(idx + 1);
+            if (!line) continue;
+            let obj = null;
+            try { obj = JSON.parse(line); } catch { continue; }
+            if (obj.type === "delta") {
+              updateAssistant(acc + String(obj.delta || ""));
+            } else if (obj.type === "done") {
+              doneObj = obj;
+            } else if (obj.type === "error") {
+              throw new Error(String(obj.error || "Stream error"));
+            }
+          }
+        }
+
+        if (doneObj && doneObj.assistant) {
+          const assistant = doneObj.assistant;
+          setMessages((m) => m.map((x) => (x.id === tmpAsst.id ? assistant : x)));
+          if (doneObj.conversation) {
+            setConversations((prev) => prev.map((c) => (c.id === doneObj.conversation.id ? { ...c, ...doneObj.conversation } : c)));
+          }
+          sfx.play("receive");
+        }
       }
     } catch (e) {
       const status = e && typeof e.status === "number" ? e.status : 0;

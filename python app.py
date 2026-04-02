@@ -4229,6 +4229,156 @@ def api_ai_stream(conversation_id: int):
     return resp
 
 
+@app.route("/api/ai/conversations/<int:conversation_id>/send", methods=["POST"])
+@login_required
+def api_ai_send(conversation_id: int):
+    """
+    Non-streaming send endpoint for clients/environments where streaming can be flaky.
+    Returns the assistant message as JSON.
+    """
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON."}), 400
+    user_id = int(session["user_id"])
+    if not _ai_conv_belongs_to_user(conversation_id, user_id):
+        return jsonify({"error": "Not found"}), 404
+
+    payload = request.get_json(silent=True) or {}
+    message = str(payload.get("message") or "").strip()
+    mode = str(payload.get("mode") or "").strip().lower()
+    regenerate = bool(payload.get("regenerate") or False)
+    requested_tz = str(payload.get("tz") or "").strip() or None
+
+    ok, quota, reserved = _reserve_ai_quota(user_id, requested_tz)
+    if not ok:
+        return jsonify({"error": "Daily free limit reached. Upgrade to Pro.", "quota": quota}), 429
+
+    # Regenerate: delete last assistant message if present and reuse last user message.
+    if regenerate:
+        conn = get_conn()
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                """
+                SELECT id, role, content
+                FROM ai_messages
+                WHERE conversation_id = ?
+                ORDER BY id DESC
+                LIMIT 2
+                """,
+                (conversation_id,),
+            )
+            rows = cur.fetchall()
+        finally:
+            conn.close()
+        if rows and rows[0][1] == "assistant":
+            ai_delete_message_and_after(conversation_id, user_id, int(rows[0][0]))
+        if rows:
+            if rows[0][1] == "user":
+                message = str(rows[0][2] or "").strip()
+            elif len(rows) > 1 and rows[1][1] == "user":
+                message = str(rows[1][2] or "").strip()
+        if not message:
+            if reserved:
+                _release_ai_quota_if_reserved(user_id, quota)
+            return jsonify({"error": "Nothing to regenerate."}), 400
+
+    inserted_user_message_id: int | None = None
+    if not regenerate:
+        if not message:
+            if reserved:
+                _release_ai_quota_if_reserved(user_id, quota)
+            return jsonify({"error": "Message cannot be empty."}), 400
+        if mode and mode in CHAT_MODES:
+            ai_update_conversation(conversation_id, user_id, mode=mode)
+        inserted_user_message_id = ai_append_message(conversation_id, user_id, "user", message)
+
+        # Auto-title: first real user message.
+        brief = ai_conversation_brief(conversation_id, user_id) or {}
+        current_title = str(brief.get("title") or "").strip()
+        if current_title in {"", "New chat"}:
+            title = re.sub(r"\s+", " ", message).strip()[:60]
+            if title:
+                ai_update_conversation(conversation_id, user_id, title=title)
+
+    special = canned_easter_egg_reply(message) or canned_about_app_reply(message)
+    if special:
+        try:
+            mid = ai_append_message(conversation_id, user_id, "assistant", special)
+            msg_obj = {
+                "id": mid,
+                "conversation_id": conversation_id,
+                "role": "assistant",
+                "content": special,
+                "created_at_utc": utc_now_iso(),
+                "edited_at_utc": "",
+            }
+            return jsonify(
+                {
+                    "assistant": msg_obj,
+                    "conversation": ai_conversation_brief(conversation_id, user_id),
+                    "quota": quota,
+                    "mode": (mode or "normal"),
+                    "special": "canned",
+                }
+            )
+        except Exception as exc:
+            if reserved:
+                _release_ai_quota_if_reserved(user_id, quota)
+            if inserted_user_message_id is not None:
+                try:
+                    ai_delete_message_and_after(conversation_id, user_id, inserted_user_message_id)
+                except Exception:
+                    pass
+            return jsonify({"error": f"Special reply failed: {str(exc)}"}), 500
+
+    current_client = get_openai_client()
+    if current_client is None:
+        if reserved:
+            _release_ai_quota_if_reserved(user_id, quota)
+        if inserted_user_message_id is not None:
+            try:
+                ai_delete_message_and_after(conversation_id, user_id, inserted_user_message_id)
+            except Exception:
+                pass
+        return jsonify({"error": "OPENAI_API_KEY is not set on the server."}), 500
+
+    try:
+        mode_used, msgs = ai_build_messages_for_model(conversation_id, user_id)
+        response = current_client.chat.completions.create(
+            model=DEFAULT_AI_MODEL,
+            messages=msgs,
+            stream=False,
+        )
+        out = response.choices[0].message.content or "(No response text returned)"
+        mid = ai_append_message(conversation_id, user_id, "assistant", out)
+        msg_obj = {
+            "id": mid,
+            "conversation_id": conversation_id,
+            "role": "assistant",
+            "content": out,
+            "created_at_utc": utc_now_iso(),
+            "edited_at_utc": "",
+        }
+        return jsonify(
+            {
+                "assistant": msg_obj,
+                "conversation": ai_conversation_brief(conversation_id, user_id),
+                "quota": quota,
+                "mode": mode_used,
+            }
+        )
+    except Exception as exc:
+        if reserved:
+            _release_ai_quota_if_reserved(user_id, quota)
+        if inserted_user_message_id is not None:
+            try:
+                ai_delete_message_and_after(conversation_id, user_id, inserted_user_message_id)
+            except Exception:
+                pass
+        app.logger.error("AI send failed: %s\n%s", exc, traceback.format_exc())
+        return jsonify({"error": f"OpenAI request failed: {str(exc)}"}), 500
+
+
 def _guess_mime(filename: str) -> str:
     name = (filename or "").lower()
     if name.endswith(".png"):
