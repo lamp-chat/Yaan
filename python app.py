@@ -67,7 +67,8 @@ app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def _load_dotenv_if_present():
+def \
+        _load_dotenv_if_present():
     """
     Lightweight .env loader so running via PyCharm (or `python "python app.py"`) still works.
     Does not override already-set environment variables.
@@ -3255,9 +3256,13 @@ def password_reset_set(token: str):
 def landing():
     if "user_id" in session:
         return redirect(url_for("app_home"))
-    # Public landing page so crawlers (and users) get real content at `/`.
-    # The actual app UI still requires auth at `/ai`.
-    return render_template("landing.html")
+    # Default: send users straight to the real auth flow.
+    # Optionally expose a public marketing landing page at `/` via env.
+    # - YAN_ROOT_PAGE=landing => render templates/landing.html
+    root_page = str(os.getenv("YAN_ROOT_PAGE", "") or "").strip().lower()
+    if root_page == "landing":
+        return render_template("landing.html")
+    return redirect(url_for("auth_page"))
 
 
 @app.route("/app")
