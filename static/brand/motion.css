@@ -1,0 +1,93 @@
+/* Shared, minimalist motion + micro-interactions across yan pages.
+   - Opt-in reveal via [data-reveal] + motion.js (IntersectionObserver)
+   - Respect prefers-reduced-motion
+*/
+
+:root {
+  --fx-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --fx-ease-snap: cubic-bezier(0.2, 0.9, 0.2, 1);
+  --fx-dur-1: 140ms;
+  --fx-dur-2: 220ms;
+  --fx-dur-3: 420ms;
+
+  /* Fallback focus ring if a page does not define its own. */
+  --fx-ring: rgba(255, 201, 74, 0.26);
+}
+
+* { box-sizing: border-box; }
+
+:where(a, button, input, textarea, select) { -webkit-tap-highlight-color: transparent; }
+
+:where(a) { text-underline-offset: 0.18em; }
+
+:where(button, [role="button"], .btn, .ig-btn, .tool-btn, .chip, .icon-btn) {
+  transition:
+    transform var(--fx-dur-1) var(--fx-ease-out),
+    filter var(--fx-dur-1) var(--fx-ease-out),
+    box-shadow var(--fx-dur-2) var(--fx-ease-out);
+}
+
+:where(button, [role="button"], .btn, .ig-btn, .tool-btn, .chip, .icon-btn):active {
+  transform: translateY(1px) scale(0.99);
+}
+
+:where(input, textarea, select) {
+  transition:
+    box-shadow var(--fx-dur-2) var(--fx-ease-out),
+    border-color var(--fx-dur-2) var(--fx-ease-out),
+    background var(--fx-dur-2) var(--fx-ease-out);
+}
+
+:where(a, button, input, textarea, select):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--fx-ring);
+}
+
+/* Page-level fade-in (kept subtle; avoid fighting per-page animations). */
+@keyframes fxPageIn {
+  from { opacity: 0.001; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+html.fx-ready body {
+  animation: fxPageIn var(--fx-dur-3) var(--fx-ease-snap) both;
+}
+
+/* Reveal animation: opt-in via data-reveal. */
+html.fx [data-reveal] {
+  opacity: 0.001;
+  transform: translateY(10px);
+  filter: blur(0.6px);
+  transition:
+    opacity var(--fx-dur-3) var(--fx-ease-snap),
+    transform var(--fx-dur-3) var(--fx-ease-snap),
+    filter var(--fx-dur-3) var(--fx-ease-snap);
+  will-change: opacity, transform, filter;
+}
+
+html.fx [data-reveal].is-in {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+/* Gentle hover lift for cards used across templates. */
+:where(.ig-card, .shell, .card, .rail-card, .modal__card, .top, .side, .main) {
+  transition:
+    transform var(--fx-dur-2) var(--fx-ease-out),
+    border-color var(--fx-dur-2) var(--fx-ease-out),
+    background var(--fx-dur-2) var(--fx-ease-out),
+    box-shadow var(--fx-dur-2) var(--fx-ease-out);
+}
+
+:where(.ig-card, .shell, .card, .rail-card, .modal__card, .top):hover {
+  transform: translateY(-2px);
+}
+
+/* Reduced motion: keep UX crisp without animations. */
+@media (prefers-reduced-motion: reduce) {
+  html.fx-ready body { animation: none !important; }
+  html.fx [data-reveal] { opacity: 1; transform: none; filter: none; transition: none; }
+  :where(button, [role="button"], .btn, .ig-btn, .tool-btn, .chip, .icon-btn),
+  :where(input, textarea, select) { transition: none !important; }
+}

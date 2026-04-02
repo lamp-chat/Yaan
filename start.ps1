@@ -101,8 +101,36 @@ if ($UsageTz) {
 }
 
 Write-Host "OPENAI_API_KEY loaded: $($env:OPENAI_API_KEY.Substring(0, [Math]::Min(7, $env:OPENAI_API_KEY.Length)))..."
-Write-Host "Starting Flask app on http://127.0.0.1:5000 (same PC)"
-Write-Host "To test on your phone: open http://<YOUR_PC_LAN_IP>:5000 on the same Wi-Fi (HOST defaults to 0.0.0.0)"
+if (-not $env:HOST) { $env:HOST = "0.0.0.0" }
+if (-not $env:PORT) { $env:PORT = "5000" }
+
+function Get-LanIPv4 {
+    try {
+        $ips = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction Stop |
+            Where-Object {
+                $_.IPAddress -and
+                $_.IPAddress -ne "127.0.0.1" -and
+                $_.IPAddress -notlike "169.254.*" -and
+                $_.PrefixOrigin -ne "WellKnown"
+            } |
+            Select-Object -ExpandProperty IPAddress
+        foreach ($ip in $ips) {
+            if ($ip -match '^\d{1,3}(\.\d{1,3}){3}$') { return $ip }
+        }
+    } catch {}
+    return ""
+}
+
+$port = $env:PORT
+$lan = Get-LanIPv4
+Write-Host "Starting Flask app:"
+Write-Host "  Same PC:  http://127.0.0.1:$port"
+if ($lan) {
+    Write-Host "  Phone:    http://$lan`:$port  (same Wi-Fi)"
+    Write-Host "If phone can't open it, allow Windows Firewall inbound for port $port."
+} else {
+    Write-Host "To test on your phone: open http://<YOUR_PC_LAN_IP>:$port on the same Wi-Fi."
+}
 if ($env:ADMIN_TOKEN) {
     Write-Host "Admin endpoints enabled: /admin/feedback?token=..."
 } else {

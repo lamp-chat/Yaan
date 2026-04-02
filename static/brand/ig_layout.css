@@ -6,12 +6,17 @@
   --ig-border: #dbdbdb;
   --ig-hover: #f2f2f2;
   --ig-search: #efefef;
-  /* Lamp accent for IG-style pages (keep the IG layout, switch the primary color). */
+  /* yan accent for IG-style pages (keep the IG layout, switch the primary color). */
   --ig-blue: #ffb703;
   --ig-blue2: #ffc94a;
   --ig-shadow: 0 12px 28px rgba(0, 0, 0, 0.10);
   --ig-max: 975px;
   --topbar-h: 60px;
+
+  /* Shared motion defaults (overridable per page). */
+  --fx-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --fx-dur-1: 140ms;
+  --fx-dur-2: 220ms;
 }
 
 * { box-sizing: border-box; }
@@ -75,9 +80,11 @@ body { overflow-x: hidden; }
   background: var(--ig-search);
   outline: none;
   font-size: 14px;
+  transition: background var(--fx-dur-2) var(--fx-ease-out), box-shadow var(--fx-dur-2) var(--fx-ease-out);
 }
 
 .ig-search__input::placeholder { color: var(--ig-muted); }
+.ig-search__input:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--ig-blue) 18%, transparent); }
 
 .ig-actions {
   display: flex;
@@ -101,9 +108,12 @@ body { overflow-x: hidden; }
   cursor: pointer;
   padding: 0;
   user-select: none;
+  transition: background var(--fx-dur-1) var(--fx-ease-out), transform var(--fx-dur-1) var(--fx-ease-out), border-color var(--fx-dur-2) var(--fx-ease-out), box-shadow var(--fx-dur-2) var(--fx-ease-out);
 }
 
 .ig-ico:hover { background: var(--ig-hover); }
+.ig-ico:active { transform: translateY(1px) scale(0.99); }
+.ig-ico:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--ig-blue) 22%, transparent); }
 
 .ig-ico.active {
   border-color: var(--ig-border);
@@ -122,8 +132,10 @@ body { overflow-x: hidden; }
   background: var(--ig-surface);
   border: 1px solid var(--ig-border);
   border-radius: 12px;
-  box-shadow: none;
+  box-shadow: var(--ig-shadow);
+  transition: transform var(--fx-dur-2) var(--fx-ease-out), box-shadow var(--fx-dur-2) var(--fx-ease-out), border-color var(--fx-dur-2) var(--fx-ease-out);
 }
+.ig-card:hover { transform: translateY(-2px); }
 
 .ig-btn {
   border: 1px solid var(--ig-border);
@@ -138,9 +150,12 @@ body { overflow-x: hidden; }
   align-items: center;
   justify-content: center;
   gap: 8px;
+  transition: background var(--fx-dur-1) var(--fx-ease-out), transform var(--fx-dur-1) var(--fx-ease-out), filter var(--fx-dur-1) var(--fx-ease-out), box-shadow var(--fx-dur-2) var(--fx-ease-out);
 }
 
 .ig-btn:hover { background: var(--ig-hover); }
+.ig-btn:active { transform: translateY(1px) scale(0.99); }
+.ig-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--ig-blue) 22%, transparent); }
 
 .ig-btn.primary {
   border: 0;
@@ -156,4 +171,12 @@ body { overflow-x: hidden; }
 @media (max-width: 980px) {
   .ig-topbar__inner { grid-template-columns: auto 1fr auto; }
   .ig-search { justify-content: flex-start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ig-ico,
+  .ig-search__input,
+  .ig-card,
+  .ig-btn { transition: none !important; }
+  .ig-card:hover { transform: none; }
 }

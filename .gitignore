@@ -12,3 +12,6 @@ secrets/*.json
 
 static/uploads/
 
+frontend/node_modules/
+frontend/.vite/
+

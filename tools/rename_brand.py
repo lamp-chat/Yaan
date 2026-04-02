@@ -1,4 +1,6 @@
-import re
+from __future__ import annotations
+
+import argparse
 from pathlib import Path
 
 
@@ -29,7 +31,15 @@ def iter_target_files(root: Path) -> list[Path]:
     return out
 
 
+def _parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser(description="Bulk rename the app brand across source files.")
+    p.add_argument("--from", dest="old", default="yan", help="Old brand string (default: yan)")
+    p.add_argument("--to", dest="new", default="yan", help="New brand string (default: yan)")
+    return p.parse_args()
+
+
 def main() -> int:
+    args = _parse_args()
     root = Path(__file__).resolve().parents[1]
 
     files = iter_target_files(root)
@@ -43,12 +53,10 @@ def main() -> int:
             skipped += 1
             continue
 
-        new = text.replace("Lamp", "Lamp")
-        # Replace the assistant name when it's used as a standalone "you" token (lowercase).
-        new = re.sub(r"\byan\b", "lamp", new)
+        new_text = text.replace(args.old, args.new)
 
-        if new != text:
-            p.write_bytes(new.encode("utf-8"))
+        if new_text != text:
+            p.write_bytes(new_text.encode("utf-8"))
             changed += 1
 
     print(f"rename_brand: changed={changed} skipped={skipped} total={len(files)}")
@@ -57,4 +65,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

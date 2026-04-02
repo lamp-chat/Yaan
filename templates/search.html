@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Search - Lamp</title>
+  <title>Search - yan</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='brand/ig_layout.css', v=static_v) }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='brand/nav.css', v=static_v) }}">
   <script src="{{ url_for('static', filename='brand/nav.js', v=static_v) }}" defer></script>
+  <script>document.documentElement.classList.add("fx")</script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand/motion.css', v=static_v) }}">
+  <script src="{{ url_for('static', filename='brand/motion.js', v=static_v) }}" defer></script>
   <style>
     .grid {
       display: grid;
@@ -115,8 +118,8 @@
 <body>
   <header class="ig-topbar" role="banner">
     <div class="ig-topbar__inner">
-      <a class="ig-brand" href="/app" data-nav aria-label="Lamp home">
-        <span class="ig-brand__word">Lamp</span>
+      <a class="ig-brand" href="/app" data-nav aria-label="yan home">
+        <span class="ig-brand__word">yan</span>
       </a>
       <div class="ig-search">
         <input id="globalSearchInput" class="ig-search__input" placeholder="Search users" aria-label="Search users" value="{{ q|e }}">
@@ -129,7 +132,7 @@
     </div>
   </header>
 
-  <main class="ig-page">
+<main class="ig-page" data-reveal>
     <div class="grid">
       <section class="card">
         <div style="font-weight:1000; font-size:18px;">Search</div>

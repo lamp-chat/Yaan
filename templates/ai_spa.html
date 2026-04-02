@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>yan AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    // Apply theme before CSS loads to avoid a flash.
+    (function () {
+      const KEY = "yan_theme";
+      let t = "";
+      try { t = (localStorage.getItem(KEY) || "").trim().toLowerCase(); } catch (e) { t = ""; }
+      const val = (t === "light" || t === "dark") ? t : "dark";
+      try { document.documentElement.dataset.theme = val; } catch (e) {}
+    })();
+  </script>
+  <script>
+    // Apply language + direction early (before React mounts) to avoid a flash.
+    (function () {
+      const RTL = { fa: true };
+      let lang = "en";
+      try { lang = (localStorage.getItem("pgpt_lang") || "en").trim().toLowerCase() || "en"; } catch (e) { lang = "en"; }
+      try { document.documentElement.lang = lang; } catch (e) {}
+      try { document.documentElement.dir = RTL[lang] ? "rtl" : "ltr"; } catch (e) {}
+    })();
+  </script>
+  {% for css_file in (vite_css or []) %}
+    <link rel="stylesheet" href="{{ url_for('static', filename=css_file, v=static_v) }}">
+  {% endfor %}
+  <script src="{{ url_for('static', filename='brand/i18n.js', v=static_v) }}" defer></script>
+  <script>
+    window.__yan__ = {
+      username: {{ (username or "User")|tojson }},
+      displayName: {{ (display_name or username or "User")|tojson }},
+      csrfToken: {{ (csrf_token or "")|tojson }},
+    };
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+  {% if vite_js %}
+    <script type="module" src="{{ url_for('static', filename=vite_js, v=static_v) }}"></script>
+  {% else %}
+    <div style="padding:16px;font-family:system-ui;color:#fff;background:#0a0a0a;">
+      Missing Vite build. Run <code>cd frontend; npm install; npm run build</code>.
+    </div>
+  {% endif %}
+</body>
+</html>

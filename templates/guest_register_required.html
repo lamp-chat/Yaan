@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ title or "Lamp" }}</title>
+  <title>{{ title or "yan" }}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='brand/ig_layout.css', v=static_v) }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='brand/nav.css', v=static_v) }}">
   <script src="{{ url_for('static', filename='brand/nav.js', v=static_v) }}" defer></script>
+  <script>document.documentElement.classList.add("fx")</script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand/motion.css', v=static_v) }}">
+  <script src="{{ url_for('static', filename='brand/motion.js', v=static_v) }}" defer></script>
   <style>
     .wrap {
       max-width: 980px;
@@ -79,7 +82,7 @@
   </style>
 </head>
 <body>
-  <div class="wrap">
+<div class="wrap" data-reveal>
     <div class="card">
       <div class="hero">
         <div class="t">Պետք է գրանցվել</div>
@@ -99,4 +102,3 @@
   </div>
 </body>
 </html>
-

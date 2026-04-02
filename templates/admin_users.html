@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Users - yan</title>
+  <meta name="robots" content="noindex, nofollow">
+  <script>document.documentElement.classList.add("fx")</script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand/motion.css', v=static_v) }}">
+  <script src="{{ url_for('static', filename='brand/motion.js', v=static_v) }}" defer></script>
+  <style>
+    :root {
+      --bg0: #070708;
+      --bg1: #0b0b0c;
+      --text: rgba(251, 246, 232, 0.96);
+      --muted: rgba(214, 204, 176, 0.76);
+      --muted2: rgba(214, 204, 176, 0.58);
+      --border: rgba(255, 201, 74, 0.18);
+      --border2: rgba(255, 201, 74, 0.10);
+      --panel: rgba(12, 12, 12, 0.74);
+      --panel2: rgba(18, 18, 18, 0.86);
+      --accent: #ffc94a;
+      --accent2: #ffb703;
+      --danger: rgba(255, 90, 90, 0.24);
+      --ok: rgba(70, 200, 130, 0.16);
+      --shadow: rgba(0, 0, 0, 0.55);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --sans: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+      --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(900px 620px at 12% 10%, rgba(255, 201, 74, 0.20) 0%, transparent 60%),
+        radial-gradient(820px 680px at 88% 90%, rgba(255, 183, 3, 0.10) 0%, transparent 60%),
+        radial-gradient(640px 420px at 62% 12%, rgba(255, 255, 255, 0.04) 0%, transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg0));
+    }
+    .wrap { padding: 18px; }
+    .top {
+      max-width: 1320px;
+      margin: 0 auto 12px;
+      border: 1px solid var(--border2);
+      background: var(--panel);
+      border-radius: 18px;
+      padding: 14px 14px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 26px 70px var(--shadow);
+    }
+    .brandRow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      width: 100%;
+      min-width: 0;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .logoWrap {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 201, 74, 0.35);
+      background: radial-gradient(circle at 30% 30%, var(--accent), var(--accent2));
+      box-shadow: 0 14px 26px rgba(0, 0, 0, 0.28);
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+    .title {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+    .title strong {
+      font-family: var(--serif);
+      letter-spacing: 0.02em;
+      color: rgba(255, 232, 170, 0.98);
+      font-size: 16px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .title span { color: var(--muted); font-size: 12px; }
+    .chip {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: rgba(255, 246, 220, 0.92);
+      border: 1px solid rgba(255, 201, 74, 0.22);
+      background: rgba(10, 10, 10, 0.55);
+      border-radius: 999px;
+      padding: 7px 10px;
+      white-space: nowrap;
+    }
+    .toolbar {
+      width: 100%;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .toolsLeft, .toolsRight {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .field {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255, 201, 74, 0.16);
+      background: rgba(10, 10, 10, 0.48);
+      border-radius: 14px;
+      padding: 10px 12px;
+      min-width: 320px;
+    }
+    .field small {
+      color: var(--muted2);
+      font-weight: 650;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-size: 12px;
+    }
+    .field input[type="search"] {
+      all: unset;
+      flex: 1 1 auto;
+      min-width: 160px;
+      font-size: 14px;
+      color: var(--text);
+    }
+    .field input[type="search"]::placeholder { color: rgba(214, 204, 176, 0.40); }
+
+    .btn {
+      border: 1px solid rgba(255, 201, 74, 0.18);
+      background: rgba(10, 10, 10, 0.50);
+      color: rgba(251, 246, 232, 0.96);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-weight: 750;
+      font-size: 13px;
+      cursor: pointer;
+      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+      white-space: nowrap;
+    }
+    .btn:hover { transform: translateY(-1px); border-color: rgba(255, 201, 74, 0.30); background: rgba(16, 16, 16, 0.62); }
+    .btn:active { transform: translateY(0); }
+    .btn.primary {
+      background: linear-gradient(180deg, rgba(255, 201, 74, 0.96), rgba(255, 183, 3, 0.92));
+      border-color: rgba(255, 201, 74, 0.42);
+      color: rgba(10, 10, 10, 0.92);
+      box-shadow: 0 16px 44px rgba(255, 201, 74, 0.12);
+    }
+    .btn.danger {
+      border-color: rgba(255, 120, 120, 0.28);
+      background: rgba(40, 10, 10, 0.35);
+      color: rgba(255, 220, 220, 0.96);
+    }
+    .btn.small { padding: 8px 10px; border-radius: 12px; font-size: 12px; }
+    .btn[disabled] { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+    .panel {
+      max-width: 1320px;
+      margin: 0 auto;
+      border: 1px solid var(--border2);
+      background: var(--panel2);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 26px 70px var(--shadow);
+    }
+    .tableWrap { overflow: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 1180px; }
+    thead th {
+      text-align: left;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(214, 204, 176, 0.74);
+      padding: 12px 12px;
+      border-bottom: 1px solid rgba(255, 201, 74, 0.10);
+      background: rgba(10, 10, 10, 0.45);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    tbody td {
+      padding: 12px 12px;
+      border-bottom: 1px solid rgba(255, 201, 74, 0.08);
+      vertical-align: top;
+      font-size: 13px;
+    }
+    tbody tr:hover td { background: rgba(255, 201, 74, 0.03); }
+    .mono { font-family: var(--mono); font-size: 12px; color: rgba(255, 246, 220, 0.86); }
+    .muted { color: rgba(214, 204, 176, 0.72); }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255, 201, 74, 0.16);
+      background: rgba(10, 10, 10, 0.46);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .ok { border-color: rgba(70, 200, 130, 0.28); background: rgba(10, 30, 20, 0.25); }
+    .warn { border-color: rgba(255, 160, 60, 0.22); background: rgba(30, 18, 10, 0.25); }
+    .dangerP { border-color: rgba(255, 120, 120, 0.22); background: rgba(30, 12, 12, 0.30); }
+
+    .rowActions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .miniForm { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .miniForm input[type="number"], .miniForm select, .miniForm input[type="text"] {
+      border: 1px solid rgba(255, 201, 74, 0.16);
+      background: rgba(10, 10, 10, 0.52);
+      color: rgba(251, 246, 232, 0.96);
+      border-radius: 12px;
+      padding: 8px 10px;
+      font-size: 12px;
+      outline: none;
+      min-width: 120px;
+    }
+    .miniForm input[type="number"] { min-width: 96px; }
+
+    .foot {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      background: rgba(10, 10, 10, 0.45);
+      border-top: 1px solid rgba(255, 201, 74, 0.10);
+      color: rgba(214, 204, 176, 0.72);
+      font-size: 12px;
+    }
+    @media (max-width: 680px) {
+      .field { min-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brandRow">
+        <div class="brand">
+          <div class="logoWrap" aria-hidden="true"></div>
+          <div class="title">
+            <strong>Admin Users</strong>
+            <span>Plans, limits, and usage controls.</span>
+          </div>
+        </div>
+        <div class="toolsRight">
+          <a class="btn" href="/admin/feedback{% if token %}?token={{ token|urlencode }}{% endif %}">Feedback</a>
+          <span class="chip">{{ users|length }} users</span>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolsLeft">
+          <div class="field">
+            <small>Search</small>
+            <input id="q" type="search" placeholder="username / email / uid" value="{{ q|e }}">
+          </div>
+          <button class="btn primary" type="button" id="applyBtn">Apply</button>
+          <span class="chip">Shown: <span id="shownCount">{{ users|length }}</span></span>
+        </div>
+        <div class="toolsRight">
+          <span class="chip">Default free limit: {{ free_daily_limit|int }}</span>
+        </div>
+      </div>
+      {% if message %}
+        <div class="pill ok">{{ message }}</div>
+      {% endif %}
+    </div>
+
+    <div class="panel">
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>User</th>
+              <th>Plan</th>
+              <th>Limit</th>
+              <th>Used Today</th>
+              <th>Reset At</th>
+              <th>Identity</th>
+              <th>Last Login</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+              <tr data-row>
+                <td class="mono">{{ u.id }}</td>
+                <td>
+                  <div style="display:grid;gap:4px;">
+                    <div style="font-weight:900;letter-spacing:0.01em;">{{ u.username }}</div>
+                    <div class="muted">{{ u.email or "" }}</div>
+                  </div>
+                </td>
+                <td>
+                  {% if u.plan in pro_plans %}
+                    <span class="pill ok">{{ u.plan }}</span>
+                  {% else %}
+                    <span class="pill">{{ u.plan }}</span>
+                  {% endif %}
+                </td>
+                <td class="mono">
+                  {% if u.plan in pro_plans %}
+                    ∞
+                  {% else %}
+                    {{ u.effective_limit }}
+                    {% if u.daily_limit_override is not none %}
+                      <span class="muted">(override)</span>
+                    {% endif %}
+                  {% endif %}
+                </td>
+                <td class="mono">
+                  {% if u.plan in pro_plans %}
+                    0
+                  {% else %}
+                    {{ u.used_today }}
+                  {% endif %}
+                </td>
+                <td class="mono">{{ u.reset_at or "" }}</td>
+                <td class="mono">
+                  {% if u.firebase_uid %}
+                    <div>{{ u.firebase_uid }}</div>
+                  {% else %}
+                    <span class="muted">-</span>
+                  {% endif %}
+                </td>
+                <td class="mono">
+                  <div>{{ u.last_login_at_utc or "" }}</div>
+                  <div class="muted">{{ u.last_login_ip or "" }}</div>
+                </td>
+                <td>
+                  <div class="rowActions">
+                    <form class="miniForm" method="POST" action="/admin/users/{{ u.id }}/plan{% if token %}?token={{ token|urlencode }}{% endif %}">
+                      <select name="plan" aria-label="Plan">
+                        <option value="free" {% if u.plan == "free" %}selected{% endif %}>free</option>
+                        <option value="pro" {% if u.plan == "pro" %}selected{% endif %}>pro</option>
+                        <option value="ultimate" {% if u.plan == "ultimate" %}selected{% endif %}>ultimate</option>
+                      </select>
+                      <button class="btn small" type="submit">Save plan</button>
+                    </form>
+
+                    <form class="miniForm" method="POST" action="/admin/users/{{ u.id }}/limit{% if token %}?token={{ token|urlencode }}{% endif %}">
+                      <input type="text" name="limit" value="{% if u.daily_limit_override is not none %}{{ u.daily_limit_override }}{% endif %}" placeholder="limit" aria-label="Daily limit override">
+                      <button class="btn small" type="submit">Save limit</button>
+                    </form>
+
+                    <form class="miniForm" method="POST" action="/admin/users/{{ u.id }}/reset-usage{% if token %}?token={{ token|urlencode }}{% endif %}" data-confirm="Reset usage for this user today?">
+                      <input type="hidden" name="scope" value="today">
+                      <button class="btn small" type="submit">Reset today</button>
+                    </form>
+
+                    <form class="miniForm" method="POST" action="/admin/users/{{ u.id }}/reset-usage{% if token %}?token={{ token|urlencode }}{% endif %}" data-confirm="Reset ALL usage rows for this user?">
+                      <input type="hidden" name="scope" value="all">
+                      <button class="btn small danger" type="submit">Reset all</button>
+                    </form>
+
+                    <form class="miniForm" method="POST" action="/admin/users/{{ u.id }}/force-revoke-pro{% if token %}?token={{ token|urlencode }}{% endif %}" data-confirm="Force revoke Pro (clears local + Firestore entitlement fields)?">
+                      <button class="btn small danger" type="submit">Force revoke Pro</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="foot">
+        <div>Tip: Use `?token=...` in the URL, or send `X-Admin-Token` header.</div>
+        <div class="mono">UTC now: {{ now_utc }}</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      function qs(sel) { return document.querySelector(sel); }
+      function qsa(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+      var q = qs("#q");
+      var rows = qsa("tr[data-row]");
+      var shownCount = qs("#shownCount");
+      function applyFilter() {
+        var needle = (q && q.value ? q.value : "").trim().toLowerCase();
+        var shown = 0;
+        for (var i = 0; i < rows.length; i++) {
+          var tr = rows[i];
+          var hay = (tr.textContent || "").toLowerCase();
+          var ok = !needle || (hay.indexOf(needle) >= 0);
+          tr.style.display = ok ? "" : "none";
+          if (ok) { shown++; }
+        }
+        if (shownCount) { shownCount.textContent = String(shown); }
+      }
+      if (q) { q.addEventListener("input", applyFilter); }
+      var applyBtn = qs("#applyBtn");
+      if (applyBtn && q) { applyBtn.addEventListener("click", applyFilter); }
+
+      // Confirm destructive actions.
+      var forms = qsa("form[data-confirm]");
+      for (var f = 0; f < forms.length; f++) {
+        forms[f].addEventListener("submit", function (e) {
+          var msg = this.getAttribute("data-confirm") || "Are you sure?";
+          if (!window.confirm(msg)) { e.preventDefault(); }
+        });
+      }
+
+      applyFilter();
+    })();
+  </script>
+</body>
+</html>
+

@@ -57,6 +57,7 @@
   const elAnalyzeBtn = $("analyzeBtn");
   const elQuickPrompts = $("quickPrompts");
   const elFocusToggle = $("focusToggle");
+  const elThemeToggleBtn = $("themeToggleBtn");
 
   const state = {
     conversations: [],
@@ -65,6 +66,8 @@
     prompts: [],
     memories: [],
     files: [],
+    loadingConversations: false,
+    loadingMessages: false,
     streaming: false,
     aborter: null,
     lastSearch: "",
@@ -72,11 +75,42 @@
     focusMode: false,
   };
 
-  const SOUND_KEY = "lamp_sound_enabled";
+  const SOUND_KEY = "yan_sound_enabled";
   const FOCUS_KEY = "lamp_focus_mode";
+  const THEME_KEY = "yan_theme";
   const DRAFT_KEY_PREFIX = "lamp_draft_";
-  const REACT_KEY_PREFIX = "lamp_react_";
+  const REACT_KEY_PREFIX = "yan_react_";
+  const MODE_DEFAULT_KEY = "yan_mode_default";
   let audioCtx = null;
+
+  function getSystemTheme() {
+    try {
+      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) return "dark";
+    } catch (e) {}
+    return "light";
+  }
+
+  function applyTheme(val) {
+    const t = (val === "dark" || val === "light") ? val : getSystemTheme();
+    try {
+      document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  }
+
+  function loadThemePref() {
+    let t = "";
+    try { t = window.localStorage.getItem(THEME_KEY) || ""; } catch (e) { t = ""; }
+    // Default to dark unless user explicitly chose otherwise.
+    applyTheme(t || "dark");
+  }
+
+  function toggleTheme() {
+    const cur = (document.documentElement.dataset.theme || getSystemTheme()).toLowerCase();
+    const next = cur === "dark" ? "light" : "dark";
+    try { window.localStorage.setItem(THEME_KEY, next); } catch (e) {}
+    applyTheme(next);
+    playSound("toggle");
+  }
 
   function isReducedMotion() {
     try {
@@ -262,6 +296,19 @@
       o.start(now);
       o.stop(now + 0.20);
     }
+  }
+
+  // Theme
+  loadThemePref();
+  if (window.matchMedia) {
+    try {
+      window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+        // If user explicitly picked a theme, don't override it.
+        let t = "";
+        try { t = window.localStorage.getItem(THEME_KEY) || ""; } catch (e) { t = ""; }
+        if (!t) applyTheme("");
+      });
+    } catch (e) {}
   }
 
   function toast(text, ms = 2400) {
@@ -578,6 +625,27 @@
     const prevTop = elThread ? elThread.scrollTop : 0;
     const wasNear = elThread ? nearBottom() : true;
     elMessages.innerHTML = "";
+    if (elMessages) elMessages.classList.toggle("loading", !!state.loadingMessages);
+
+    if (state.loadingMessages) {
+      for (let i = 0; i < 3; i++) {
+        const wrap = document.createElement("div");
+        wrap.className = "msg assistant sk";
+        const bubble = document.createElement("div");
+        bubble.className = "bubble";
+        bubble.innerHTML = '<div class="sk-lines"><div class="sk-line w70"></div><div class="sk-line w92"></div><div class="sk-line w60"></div></div>';
+        wrap.appendChild(bubble);
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        meta.innerHTML = '<div class="sk-line w40"></div><div class="sk-line w24"></div>';
+        wrap.appendChild(meta);
+        elMessages.appendChild(wrap);
+      }
+      if (elThread) elThread.scrollTop = prevTop;
+      updateJump();
+      return;
+    }
+
     for (const m of state.messages) {
       const wrap = document.createElement("div");
       wrap.className = `msg ${m.role === "user" ? "user" : "assistant"}`;
@@ -602,7 +670,7 @@
       const meta = document.createElement("div");
       meta.className = "meta";
       const left = document.createElement("div");
-      left.textContent = `${m.role === "user" ? "You" : "Lamp"} - ${fmtTime(m.created_at_utc)}${m.edited_at_utc ? " - edited" : ""}`;
+      left.textContent = `${m.role === "user" ? "You" : "yan"} - ${fmtTime(m.created_at_utc)}${m.edited_at_utc ? " - edited" : ""}`;
       const actions = document.createElement("div");
       actions.className = "actions";
 
@@ -679,6 +747,11 @@
       wrap.appendChild(meta);
       elMessages.appendChild(wrap);
     }
+
+    if (elApp) {
+      const empty = !state.loadingMessages && !state.streaming && (!state.messages || state.messages.length === 0);
+      elApp.classList.toggle("is-empty", empty);
+    }
     if (elThread) {
       if (wasNear) requestAnimationFrame(() => scrollToBottom());
       else elThread.scrollTop = prevTop;
@@ -688,6 +761,15 @@
 
   function renderChatList() {
     elChatList.innerHTML = "";
+    if (state.loadingConversations) {
+      for (let i = 0; i < 7; i++) {
+        const sk = document.createElement("div");
+        sk.className = "chat-item sk";
+        sk.innerHTML = '<div class="sk-lines"><div class="sk-line w70"></div><div class="sk-line w52"></div></div>';
+        elChatList.appendChild(sk);
+      }
+      return;
+    }
     for (const c of state.conversations) {
       const btn = document.createElement("button");
       btn.type = "button";
@@ -727,15 +809,22 @@
 
   async function loadConversations(q = "") {
     state.lastSearch = q;
+    state.loadingConversations = true;
+    renderChatList();
     const data = await api(`/api/ai/conversations?q=${encodeURIComponent(q)}&limit=120`, { method: "GET" });
     state.conversations = data.conversations || [];
+    state.loadingConversations = false;
     renderChatList();
   }
 
   async function loadMessages(conversationId) {
     if (!conversationId) return;
+    state.loadingMessages = true;
+    state.messages = [];
+    renderMessages();
     const data = await api(`/api/ai/conversations/${conversationId}/messages?limit=500`, { method: "GET" });
     state.messages = data.messages || [];
+    state.loadingMessages = false;
     renderMessages();
     elChatMeta.textContent = "Ready";
     requestAnimationFrame(() => scrollToBottom());
@@ -842,7 +931,7 @@
     requestAnimationFrame(() => scrollToBottom());
     playSound(regenerate ? "toggle" : "send");
 
-    elChatMeta.textContent = "Lamp is thinking...";
+    elChatMeta.textContent = "yan is thinking...";
 
     try {
       const res = await fetch(`/api/ai/conversations/${conversationId}/stream`, {
@@ -1145,6 +1234,9 @@
       playSound("toggle");
     });
   }
+  if (elThemeToggleBtn) {
+    elThemeToggleBtn.addEventListener("click", toggleTheme);
+  }
 
     elToggleSidebarBtn.addEventListener("click", () => {
       elSidebar.classList.toggle("open");
@@ -1158,9 +1250,12 @@
       elToggleRightBtn.addEventListener("click", () => elRight.classList.toggle("open"));
     }
 
-    document.querySelectorAll(".tab").forEach((t) => {
-      t.addEventListener("click", () => setActivePane(t.getAttribute("data-tab") || "tools"));
-    });
+    document.querySelectorAll(".tab").forEach((t) => { 
+      t.addEventListener("click", () => { 
+        setActivePane(t.getAttribute("data-tab") || "tools"); 
+        playSound("toggle"); 
+      }); 
+    }); 
 
     document.addEventListener("keydown", (ev) => {
       if (ev.ctrlKey && ev.shiftKey && (ev.key === "F" || ev.key === "f")) {
@@ -1173,9 +1268,10 @@
       }
     });
 
-    elNewChatBtn.addEventListener("click", async () => {
-      try { await createConversation(); } catch (e) { toast(e.message || "Failed"); }
-    });
+    elNewChatBtn.addEventListener("click", async () => { 
+      playSound("toggle"); 
+      try { await createConversation(); } catch (e) { toast(e.message || "Failed"); } 
+    }); 
 
     elChatSearch.addEventListener("input", async () => {
       const q = (elChatSearch.value || "").trim();
@@ -1337,10 +1433,13 @@
 
     elInput.addEventListener("input", autosize);
     elInput.addEventListener("keydown", async (e) => {
-      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        elSendBtn.click();
-      }
+      // Enter sends, Shift+Enter inserts a newline.
+      // Avoid interfering with IME composition.
+      if (e.isComposing) return;
+      if (e.key !== "Enter") return;
+      if (e.shiftKey) return;
+      e.preventDefault();
+      elSendBtn.click();
     });
 
     elRenameBtn.addEventListener("click", async () => {
@@ -1471,13 +1570,13 @@
 
   function toTxt(msgs) {
     return msgs
-      .map((m) => `${m.role === "user" ? "You" : "Lamp"} (${fmtTime(m.created_at_utc)}):\n${m.content}\n`)
+      .map((m) => `${m.role === "user" ? "You" : "yan"} (${fmtTime(m.created_at_utc)}):\n${m.content}\n`)
       .join("\n");
   }
 
   function toMd(msgs) {
     return msgs
-      .map((m) => `### ${m.role === "user" ? "You" : "Lamp"}\n\n${m.content}\n`)
+      .map((m) => `### ${m.role === "user" ? "You" : "yan"}\n\n${m.content}\n`)
       .join("\n");
   }
 
@@ -1523,6 +1622,16 @@
     try {
       await loadPrompts();
       await loadMemories();
+
+      // Settings default for new chats.
+      if (elModeSelect) {
+        try {
+          const saved = String(window.localStorage.getItem(MODE_DEFAULT_KEY) || "").trim().toLowerCase();
+          const ok = saved && Array.from(elModeSelect.options || []).some((o) => o.value === saved);
+          if (ok) elModeSelect.value = saved;
+        } catch (e) {}
+      }
+
       await loadConversations("");
       if (state.conversations[0]) await selectConversation(state.conversations[0].id);
       else await createConversation();

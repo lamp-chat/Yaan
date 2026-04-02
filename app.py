@@ -17,7 +17,7 @@ _APP_PATH = Path(__file__).with_name("python app.py")
 if not _APP_PATH.exists():
     raise FileNotFoundError(f"Expected app source file not found: {_APP_PATH}")
 
-_spec = importlib.util.spec_from_file_location("lamp_app", _APP_PATH)
+_spec = importlib.util.spec_from_file_location("yan_app", _APP_PATH)
 if _spec is None or _spec.loader is None:
     raise RuntimeError(f"Failed to create module spec for: {_APP_PATH}")
 

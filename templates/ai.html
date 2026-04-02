@@ -3,33 +3,34 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Lamp AI</title>
+  <title>yan AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand/site.css', v=static_v) }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='ai/ai.css', v=static_v) }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand/motion.css', v=static_v) }}">
   <script src="{{ url_for('static', filename='brand/i18n.js', v=static_v) }}" defer></script>
   <script>
-    window.__Lamp__ = {
+    window.__yan__ = {
       username: {{ (username or "User")|tojson }},
       displayName: {{ (display_name or username or "User")|tojson }},
     };
   </script>
   <script src="{{ url_for('static', filename='ai/ai.js', v=static_v) }}" defer></script>
-</head>
-<body>
-  <div class="app" id="app">
-    <aside class="sidebar" id="sidebar">
+  <script src="{{ url_for('static', filename='brand/motion.js', v=static_v) }}" defer></script>
+</head> 
+<body class="chat-app"> 
+  <div class="app" id="app"> 
+    <aside class="sidebar glass" id="sidebar">
       <div class="sb-top">
-        <a class="brand" href="/ai" title="Lamp">
-          <img class="brand__logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="Lamp">
+        <a class="brand" href="/ai" title="yan">
+          <img class="brand__logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="yan">
           <div class="brand__meta">
-            <div class="brand__name">Lamp</div>
+            <div class="brand__name">yan</div>
             <div class="brand__sub">AI Assistant</div>
           </div>
         </a>
-        <button class="icon-btn" id="newChatBtn" title="New chat" type="button">
-          <span class="ico" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          </span>
-        </button>
       </div>
 
       <div class="sb-search">
@@ -39,6 +40,15 @@
         <input id="chatSearch" class="sb-search__input" placeholder="Search chats and messages (Ctrl+K)" autocomplete="off">
       </div>
 
+      <div class="sb-cta">
+        <button class="btn primary sb-cta__btn" id="newChatBtn" type="button">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+          <span>New chat</span>
+        </button>
+      </div>
+
       <nav class="sb-list" id="chatList" aria-label="Chats"></nav>
 
       <div class="sb-bottom">
@@ -46,7 +56,10 @@
           <div class="me__avatar" aria-hidden="true">{{ (display_name or username or "U")[:1]|upper }}</div>
           <div class="me__meta">
             <div class="me__name">{{ display_name or username }}</div>
-            <div class="me__hint">Settings in chat header</div>
+            <div class="me__hint">
+              Settings in header - build 2026-04-01
+              {% if spa_missing %} - Legacy UI (React build not found){% endif %}
+            </div>
           </div>
         </div>
         <form method="POST" action="/logout">
@@ -56,68 +69,82 @@
       </div>
     </aside>
 
-    <main class="main" id="main">
-      <header class="topbar">
-        <button class="icon-btn mobile-only" id="toggleSidebarBtn" type="button" title="Menu">
-          <span class="ico" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          </span>
-        </button>
-        <button class="icon-btn mobile-only" id="openToolsBtn" type="button" title="Tools">
-          <span class="ico" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 15 8l6 .8-4.5 4 1.4 6.2L12 16.9 6.1 19l1.4-6.2L3 8.8 9 8l3-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
-          </span>
-        </button>
-
-        <div class="title">
-          <div class="title__name" id="chatTitle">New chat</div>
-          <div class="title__meta" id="chatMeta">Ready</div>
-        </div>
-
-        <div class="topbar__actions">
-          <select class="mode" id="modeSelect" title="AI mode">
-            <option value="normal">Normal</option>
-            <option value="creative">Creative</option>
-            <option value="coding">Coding</option>
+    <main class="main glass" id="main"> 
+      <div class="chat"> 
+      <header class="chatbar"> 
+        <button class="icon-btn mobile-only" id="toggleSidebarBtn" type="button" title="Menu"> 
+          <span class="ico" aria-hidden="true"> 
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> 
+          </span> 
+        </button> 
+        <button class="icon-btn mobile-only" id="openToolsBtn" type="button" title="Tools"> 
+          <span class="ico" aria-hidden="true"> 
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 15 8l6 .8-4.5 4 1.4 6.2L12 16.9 6.1 19l1.4-6.2L3 8.8 9 8l3-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg> 
+          </span> 
+        </button> 
+ 
+        <div class="title"> 
+          <div class="title__name" id="chatTitle">New chat</div> 
+          <div class="title__meta" id="chatMeta">Ready</div> 
+        </div> 
+ 
+        <div class="chatbar__actions"> 
+          <select class="field mode" id="modeSelect" title="AI mode"> 
+            <option value="normal">Normal</option> 
+            <option value="creative">Creative</option> 
+            <option value="coding">Coding</option> 
             <option value="research">Research</option>
             <option value="learning">Learning</option>
             <option value="business">Business</option>
             <option value="translator">Translator</option>
           </select>
 
+          <button class="icon-btn" id="themeToggleBtn" type="button" title="Toggle theme" aria-label="Toggle theme">
+            <span class="ico theme-ico" aria-hidden="true">
+              <svg class="sun" viewBox="0 0 24 24" fill="none">
+                <path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <svg class="moon" viewBox="0 0 24 24" fill="none">
+                <path d="M21 14.2A8.5 8.5 0 0 1 9.8 3a7 7 0 1 0 11.2 11.2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </button>
+
           <a class="btn primary" href="/upgrade" title="Upgrade to Pro">Upgrade</a>
           <button class="btn ghost" id="pinBtn" type="button" title="Pin / unpin chat">Pin</button>
           <button class="btn ghost" id="bookmarkBtn" type="button" title="Bookmark / unbookmark chat">Bookmark</button>
           <button class="btn ghost" id="shareBtn" type="button" title="Share conversation">Share</button>
           <button class="btn ghost" id="exportBtn" type="button" title="Export chat">Export</button>
-          <button class="btn ghost" id="renameBtn" type="button" title="Rename chat">Rename</button>
-          <button class="btn danger" id="deleteBtn" type="button" title="Delete chat">Delete</button>
-        </div>
-      </header>
+          <button class="btn ghost" id="renameBtn" type="button" title="Rename chat">Rename</button> 
+          <button class="btn danger" id="deleteBtn" type="button" title="Delete chat">Delete</button> 
+        </div> 
+      </header> 
+ 
+      <section class="chat-thread" id="thread" aria-label="Chat messages"> 
+        <div class="chat-messages" id="messages"></div> 
+        <button class="jump" id="jumpBtn" type="button" hidden>Jump to latest</button> 
+      </section> 
+ 
+      <section class="chat-compose"> 
+        <div class="chat-compose__inner"> 
+          <button class="icon-btn attach-btn" id="attachBtn" type="button" title="Attach file"> 
+            <span class="ico" aria-hidden="true"> 
+              <svg viewBox="0 0 24 24" fill="none"><path d="M21 12.5 12.6 20.9a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.8-8.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 
+            </span> 
+          </button> 
+          <textarea id="input" class="chat-compose__input" placeholder="Message yan... (Enter to send, Shift+Enter for new line)" rows="1"></textarea> 
+          <button class="btn ghost" id="improveBtn" type="button" title="Improve prompt">Improve</button> 
+          <button class="btn primary" id="sendBtn" type="button">Send</button> 
+        </div> 
+        <div class="chat-compose__hint" id="composerHint"> 
+          Shortcuts: <span class="kbd">Ctrl</span>+<span class="kbd">Enter</span> send, <span class="kbd">Ctrl</span>+<span class="kbd">K</span> search, <span class="kbd">Ctrl</span>+<span class="kbd">N</span> new chat. 
+        </div> 
+      </section> 
+      </div> 
+    </main> 
 
-      <section class="thread" id="thread" aria-label="Chat messages">
-        <div class="thread__inner" id="messages"></div>
-        <button class="jump" id="jumpBtn" type="button" hidden>Jump to latest</button>
-      </section>
-
-      <section class="composer">
-        <div class="composer__inner">
-          <button class="icon-btn attach-btn" id="attachBtn" type="button" title="Attach file">
-            <span class="ico" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M21 12.5 12.6 20.9a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.8-8.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </span>
-          </button>
-          <textarea id="input" class="composer__input" placeholder="Message Lamp... (Ctrl+Enter to send)" rows="1"></textarea>
-          <button class="btn ghost" id="improveBtn" type="button" title="Improve prompt">Improve</button>
-          <button class="btn primary" id="sendBtn" type="button">Send</button>
-        </div>
-        <div class="composer__hint" id="composerHint">
-          Shortcuts: <span class="kbd">Ctrl</span>+<span class="kbd">Enter</span> send, <span class="kbd">Ctrl</span>+<span class="kbd">K</span> search, <span class="kbd">Ctrl</span>+<span class="kbd">N</span> new chat.
-        </div>
-      </section>
-    </main>
-
-    <aside class="right" id="right">
+    <aside class="right glass" id="right">
       <div class="right__top">
         <div class="right__title">Workspace</div>
         <button class="icon-btn mobile-only" id="toggleRightBtn" type="button" title="Tools">
@@ -205,7 +232,7 @@
       <section class="pane" data-pane="memory">
         <div class="card">
           <div class="card__title">User Memory</div>
-          <div class="fine">Saved facts help Lamp across chats.</div>
+          <div class="fine">Saved facts help yan across chats.</div>
           <div class="list" id="memoryList"></div>
         </div>
         <div class="card">

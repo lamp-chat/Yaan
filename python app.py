@@ -2,12 +2,15 @@
 import json
 import os
 import re
+import socket
 import sqlite3
 import time as pytime
 import traceback
+from pathlib import Path
 from datetime import date, datetime, time, timedelta, timezone
 from functools import wraps
 from typing import Any
+from urllib.parse import urlsplit, urlunsplit
 from uuid import uuid4
 
 from authlib.integrations.flask_client import OAuth
@@ -94,24 +97,22 @@ def _load_dotenv_if_present():
 
 _load_dotenv_if_present()
 
-@app.context_processor
-def _inject_static_v():
-    """
-    Cache-bust CSS/JS during local UI iterations so browsers don't keep stale assets.
-
-    Behavior:
-    - If STATIC_V is explicitly set, use it (production-friendly, stable caching).
-    - Otherwise, use a per-request timestamp (development-friendly).
-    """
-    debug = str(os.getenv("FLASK_DEBUG", "") or "").strip() == "1"
-    if debug:
-        return {"static_v": str(int(pytime.time()))}
-
-    forced = str(os.getenv("STATIC_V", "") or "").strip()
-    if forced:
-        return {"static_v": forced}
-
-    return {"static_v": str(int(pytime.time()))}
+@app.context_processor 
+def _inject_static_v(): 
+    """ 
+    Cache-bust CSS/JS during local UI iterations so browsers don't keep stale assets. 
+ 
+    Behavior: 
+    - Default: always use a per-request timestamp (development-friendly, avoids stale CSS/JS). 
+    - Optional: set STATIC_V_MODE=env (or "forced") to use STATIC_V as a stable version string. 
+    """ 
+    mode = str(os.getenv("STATIC_V_MODE", "") or "").strip().lower() 
+    if mode in ("env", "forced"): 
+        forced = str(os.getenv("STATIC_V", "") or "").strip() 
+        if forced: 
+            return {"static_v": forced} 
+ 
+    return {"static_v": str(int(pytime.time()))} 
 
 @app.context_processor
 def _inject_csrf():
@@ -152,17 +153,17 @@ conversations = {}
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 CHAT_MODES = {
-    "normal": "You are Lamp, a helpful assistant.",
+    "normal": "You are yan, a helpful assistant.",
     # Next-gen modes
-    "creative": "You are Lamp in Creative Mode. Be imaginative, playful, and practical. Offer multiple options and bold ideas.",
-    "coding": "You are Lamp in Coding Mode. Be precise, include correct code, explain tradeoffs, and suggest tests and edge cases.",
-    "research": "You are Lamp in Research Mode. Ask clarifying questions, be careful with uncertainty, and structure the answer with claims and caveats. If you cannot browse, say so.",
-    "learning": "You are Lamp in Learning Mode. Teach step-by-step, check understanding, and include short exercises or examples.",
-    "business": "You are Lamp in Business Mode. Be concise, decision-oriented, and focus on ROI, risks, and next steps.",
-    "translator": "You are Lamp in Translator Mode. Translate and improve text naturally, keeping meaning intact.",
+    "creative": "You are yan in Creative Mode. Be imaginative, playful, and practical. Offer multiple options and bold ideas.",
+    "coding": "You are yan in Coding Mode. Be precise, include correct code, explain tradeoffs, and suggest tests and edge cases.",
+    "research": "You are yan in Research Mode. Ask clarifying questions, be careful with uncertainty, and structure the answer with claims and caveats. If you cannot browse, say so.",
+    "learning": "You are yan in Learning Mode. Teach step-by-step, check understanding, and include short exercises or examples.",
+    "business": "You are yan in Business Mode. Be concise, decision-oriented, and focus on ROI, risks, and next steps.",
+    "translator": "You are yan in Translator Mode. Translate and improve text naturally, keeping meaning intact.",
     # Back-compat aliases
-    "teacher": "You are Lamp in Learning Mode. Teach step-by-step, check understanding, and include short exercises or examples.",
-    "brainstorm": "You are Lamp in Creative Mode. Be imaginative, playful, and practical. Offer multiple options and bold ideas.",
+    "teacher": "You are yan in Learning Mode. Teach step-by-step, check understanding, and include short exercises or examples.",
+    "brainstorm": "You are yan in Creative Mode. Be imaginative, playful, and practical. Offer multiple options and bold ideas.",
 }
 
 oauth = OAuth(app)
@@ -281,11 +282,14 @@ def init_db():
         cur.execute("ALTER TABLE users ADD COLUMN locked_until_utc TEXT")
     if "password_changed_at_utc" not in user_columns:
         cur.execute("ALTER TABLE users ADD COLUMN password_changed_at_utc TEXT")
+    if "daily_limit_override" not in user_columns:
+        cur.execute("ALTER TABLE users ADD COLUMN daily_limit_override INTEGER")
     cur.execute("UPDATE users SET plan = ? WHERE plan IS NULL OR TRIM(plan) = ''", (FREE_PLAN,))
     now = utc_now_iso()
     cur.execute("UPDATE users SET created_at_utc = ? WHERE created_at_utc IS NULL OR TRIM(created_at_utc) = ''", (now,))
     cur.execute("UPDATE users SET failed_login_count = 0 WHERE failed_login_count IS NULL")
     cur.execute("UPDATE users SET locked_until_utc = '' WHERE locked_until_utc IS NULL")
+    cur.execute("UPDATE users SET daily_limit_override = NULL WHERE daily_limit_override IS NOT NULL AND daily_limit_override < 0")
     cur.execute(
         "UPDATE users SET password_changed_at_utc = COALESCE(created_at_utc, ?) "
         "WHERE password_changed_at_utc IS NULL OR TRIM(password_changed_at_utc) = ''",
@@ -1103,6 +1107,75 @@ def _safe_now_iso() -> str:
 def _public_base_url() -> str:
     # Best-effort; use PUBLIC_BASE_URL in prod to create correct share links behind proxies.
     return (os.getenv("PUBLIC_BASE_URL") or "").strip()
+
+
+def _guess_lan_ip() -> str | None:
+    """
+    Best-effort local/LAN IP detection for development share links.
+    Returns None if we can't find a non-loopback IPv4.
+    """
+    # 1) UDP connect trick (does not need to send traffic successfully).
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            s.connect(("8.8.8.8", 80))
+            ip = str(s.getsockname()[0] or "").strip()
+        finally:
+            try:
+                s.close()
+            except Exception:
+                pass
+        if ip and not ip.startswith("127."):
+            return ip
+    except Exception:
+        pass
+
+    # 2) Hostname resolution fallback (often returns 127.0.0.1; ignore that).
+    try:
+        ip = str(socket.gethostbyname(socket.gethostname()) or "").strip()
+        if ip and not ip.startswith("127."):
+            return ip
+    except Exception:
+        pass
+
+    return None
+
+
+def _best_public_base_url() -> str:
+    """
+    Returns a base URL suitable for share/billing redirects.
+
+    Priority:
+    - PUBLIC_BASE_URL env var (recommended for prod / ngrok)
+    - request.url_root (current request host)
+    - if current host is localhost/127.0.0.1: try to replace it with LAN IP
+    """
+    base = _public_base_url().rstrip("/")
+    if base:
+        return base
+
+    try:
+        base = (request.url_root or "").rstrip("/")
+    except Exception:
+        base = ""
+
+    if not base:
+        return ""
+
+    try:
+        u = urlsplit(base)
+        host = (u.hostname or "").strip().lower()
+        if host in ("127.0.0.1", "localhost"):
+            ip = _guess_lan_ip()
+            if ip:
+                netloc = ip
+                if u.port:
+                    netloc = f"{ip}:{u.port}"
+                return urlunsplit((u.scheme, netloc, "", "", ""))
+    except Exception:
+        pass
+
+    return base
 
 
 def _stripe_enabled() -> bool:
@@ -2486,6 +2559,303 @@ def admin_required() -> tuple[bool, Response | None]:
     return True, None
 
 
+def canned_about_app_reply(user_message: str) -> str | None:
+    """
+    Deterministic answers about this app/company.
+    Requirement: regardless of phrasing, if the intent matches, always return the configured answer.
+    """
+
+    def norm(s: str) -> str:
+        s = (s or "").strip().lower()
+        if not s:
+            return ""
+        # Keep letters/numbers from all scripts; strip punctuation to make matching robust.
+        s = re.sub(r"[^\w\s]+", " ", s, flags=re.UNICODE)
+        s = re.sub(r"\s+", " ", s, flags=re.UNICODE).strip()
+        return s
+
+    def has_any(s: str, toks: list[str]) -> bool:
+        return any(t and (t in s) for t in toks)
+
+    def mentions_name(s: str) -> bool:
+        variants = [
+            ("erik", "petrosyan"),
+            ("էրիկ", "պետրոսյան"),
+            ("երիկ", "պետրոսյան"),
+            ("эрик", "петросян"),
+        ]
+        return any(a in s and b in s for a, b in variants)
+
+    def detect_lang(raw: str) -> str:
+        r = raw or ""
+        if re.search(r"[\u0530-\u058F]", r):  # Armenian
+            return "hy"
+        if re.search(r"[\u0600-\u06FF]", r):  # Arabic/Persian
+            return "fa"
+        if re.search(r"[\u0400-\u04FF]", r):  # Cyrillic (ru/uk)
+            # crude: Ukrainian unique letters
+            if re.search(r"[іїєґІЇЄҐ]", r):
+                return "uk"
+            return "ru"
+        # fallback by keywords
+        low = (r or "").lower()
+        if re.search(r"(?:^|\W)(wer|wem|erstellt|erschaffen|entwickelt|autor)(?:$|\W)", low):
+            return "de"
+        return "en"
+
+    def questionish(raw: str, s: str) -> bool:
+        if "?" in (raw or ""):
+            return True
+        return has_any(
+            s,
+            [
+                "who",
+                "who is",
+                "tell me",
+                "about",
+                "what is",
+                "kto",
+                "кто",
+                "хто",
+                "ov",
+                "ով",
+                "ինչ",
+                "ասա",
+                "պատմ",
+            ],
+        )
+
+    raw = (user_message or "").strip()
+    s = norm(raw)
+    if not s:
+        return None
+
+    lang = detect_lang(raw)
+
+    def reply_company_owner(lang_code: str) -> str:
+        # Keep it short, and never mention OpenAI/ChatGPT per product requirement.
+        if lang_code == "hy":
+            return "YAN Company։ Տեր՝ Erik Petrosyan։"
+        if lang_code == "ru":
+            return "YAN Company. Владелец: Erik Petrosyan."
+        if lang_code == "uk":
+            return "YAN Company. Власник: Erik Petrosyan."
+        if lang_code == "de":
+            return "YAN Company. Inhaber: Erik Petrosyan."
+        if lang_code == "fa":
+            return "YAN Company. مالک: Erik Petrosyan."
+        return "YAN Company. Owner: Erik Petrosyan."
+
+    # Intent: "who created you / who made yan"
+    creator_tokens = [
+        # English
+        "create",
+        "created",
+        "creator",
+        "made",
+        "make",
+        "built",
+        "build",
+        "develop",
+        "developed",
+        # Armenian stems
+        "ստեղծ",
+        "սարք",
+        "հեղինակ",
+        # Armenian (latin translit stems)
+        "stex",
+        "stexc",
+        "stexcel",
+        "stexcvel",
+        "sarq",
+        "heghinak",
+        "hexinak",
+        # Russian/Ukrainian stems
+        "созд",
+        "сдел",
+        "разработ",
+        "створ",
+        "зроб",
+        # Persian stems
+        "ساخت",
+        "سازنده",
+        "توسعه",
+    ]
+    you_tokens = [
+        "you",
+        "u",
+        "yan",
+        # Armenian
+        "քեզ",
+        "ձեզ",
+        "դու",
+        # Armenian translit
+        "qez",
+        "dzez",
+        "du",
+        # Russian/Ukrainian
+        "теб",
+        "вас",
+        "ты",
+        "ви",
+        "тебе",
+        "тоб",
+        "тобі",
+        # Persian
+        "تو",
+        "شما",
+    ]
+    q_tokens = ["who", "кто", "хто", "ov", "ով"]
+
+    is_creator_question = (has_any(s, creator_tokens) and has_any(s, you_tokens) and (has_any(s, q_tokens) or "?" in raw or len(s.split()) <= 7))
+    if is_creator_question:
+        return reply_company_owner(lang)
+
+    # Intent: "are you ChatGPT/OpenAI/GPT" / "who are you (model/provider)".
+    provider_tokens = [
+        "openai",
+        "chatgpt",
+        "gpt",
+        "gpt4",
+        "gpt-4",
+        "gpt 4",
+        "assistant",
+        "model",
+        "llm",
+        # Russian/Ukrainian
+        "чатгпт",
+        "чат gpt",
+        "опенай",
+        "модель",
+        # Armenian
+        "չաթգպտ",
+        "օփենայ",
+    ]
+    identity_q_tokens = [
+        "are you",
+        "what are you",
+        "who are you",
+        "is this",
+        "is it",
+        "you are",
+        # Armenian
+        "դու",
+        "դուք",
+        "ո՞վ ես",
+        "ինչ ես",
+        # Russian/Ukrainian
+        "ты",
+        "вы",
+        "кто ты",
+        "что ты",
+        "ти",
+        "хто ти",
+        "що ти",
+        # Persian
+        "تو",
+        "شما",
+    ]
+    if (has_any(s, provider_tokens) and (questionish(raw, s) or has_any(s, identity_q_tokens)) and has_any(s, you_tokens)):
+        return reply_company_owner(lang)
+
+    # Intent: "who is Erik Petrosyan" (or equivalent)
+    if mentions_name(s) and questionish(raw, s):
+        return reply_company_owner(lang)
+
+    return None
+
+
+def get_user_daily_limit_override(user_id: int) -> int | None:
+    """Per-user override for FREE plan daily message limit. None means use global FREE_DAILY_MESSAGE_LIMIT."""
+    conn = get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT daily_limit_override FROM users WHERE id = ?", (int(user_id),))
+        row = cur.fetchone()
+        if not row:
+            return None
+        v = row[0]
+        if v is None:
+            return None
+        try:
+            n = int(v)
+        except Exception:
+            return None
+        return n if n >= 0 else None
+    finally:
+        conn.close()
+
+
+def set_user_daily_limit_override(user_id: int, limit: int | None) -> None:
+    conn = get_conn()
+    try:
+        cur = conn.cursor()
+        if limit is None:
+            cur.execute("UPDATE users SET daily_limit_override = NULL WHERE id = ?", (int(user_id),))
+        else:
+            cur.execute("UPDATE users SET daily_limit_override = ? WHERE id = ?", (int(limit), int(user_id)))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def effective_free_daily_limit_for_user(user_id: int) -> int:
+    """Effective free daily limit for this user (override or global)."""
+    override = get_user_daily_limit_override(int(user_id))
+    if override is None:
+        return int(FREE_DAILY_MESSAGE_LIMIT)
+    return int(max(0, override))
+
+
+def _firebase_uid_for_user_id(user_id: int) -> str:
+    conn = get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT provider_user_id FROM identities WHERE user_id = ? AND provider = ? LIMIT 1",
+            (int(user_id), "firebase"),
+        )
+        row = cur.fetchone()
+        return str(row[0] or "").strip() if row else ""
+    finally:
+        conn.close()
+
+
+def _billing_clear_subscription_local(user_id: int) -> None:
+    conn = get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM billing_subscriptions WHERE user_id = ?", (int(user_id),))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def _billing_force_revoke_firestore_entitlements(firebase_uid: str) -> None:
+    uid = (firebase_uid or "").strip()
+    if not uid:
+        return
+    doc_ref = _billing_firestore_doc(uid)
+    if doc_ref is None:
+        return
+    try:
+        doc_ref.set(
+            {
+                "uid": uid,
+                "plan_type": FREE_PLAN,
+                "subscription_status": "",
+                "stripe_customer_id": "",
+                "stripe_subscription_id": "",
+                "current_period_end_utc": "",
+                "cancel_at_period_end": False,
+                "updated_at_utc": utc_now_iso(),
+            },
+            merge=True,
+        )
+    except Exception:
+        return
+
+
 def allowed_image(filename: str) -> bool:
     ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
     return ext in ALLOWED_IMAGE_EXTENSIONS
@@ -2883,29 +3253,63 @@ def password_reset_set(token: str):
 
 @app.route("/")
 def landing():
-    # Avoid a non-functional "landing login" screen; route users to the real auth flow.
     if "user_id" in session:
         return redirect(url_for("app_home"))
-    return redirect(url_for("auth_page"))
+    # Public landing page so crawlers (and users) get real content at `/`.
+    # The actual app UI still requires auth at `/ai`.
+    return render_template("landing.html")
 
 
 @app.route("/app")
 @login_required
 def app_home():
-    return render_template(
-        "index.html",
-        username=session.get("username", "User"),
-        display_name=session.get("display_name", ""),
-    )
+    # Single source of truth for the main AI chat UI.
+    resp = redirect(url_for("ai_home"))
+    # Avoid browsers/proxies caching the redirect and/or an older rendered page.
+    resp.headers["Cache-Control"] = "no-store, max-age=0"
+    resp.headers["Pragma"] = "no-cache"
+    return resp
 
 
 @app.route("/ai")
 @login_required
 def ai_home():
+    # Prefer the React/Tailwind SPA build if present.
+    # You can force behavior via env:
+    # - YAN_USE_SPA=1  => always try SPA first
+    # - YAN_USE_SPA=0  => always use server-rendered template UI
+    use_spa_raw = str(os.getenv("YAN_USE_SPA", "") or "").strip().lower()
+    use_spa_forced = None
+    if use_spa_raw in ("1", "true", "yes", "on"):
+        use_spa_forced = True
+    elif use_spa_raw in ("0", "false", "no", "off"):
+        use_spa_forced = False
+
+    manifest_path = Path(app.static_folder or "static") / "spa" / ".vite" / "manifest.json"
+    use_spa = manifest_path.exists() if use_spa_forced is None else use_spa_forced
+    if use_spa and manifest_path.exists():
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            entry = manifest.get("index.html") or {}
+            js_file = str(entry.get("file") or "").strip()
+            css_files = entry.get("css") or []
+            css_files = [str(x) for x in css_files if str(x).strip()]
+            if js_file:
+                return render_template(
+                    "ai_spa.html",
+                    username=session.get("username", "User"),
+                    display_name=session.get("display_name", ""),
+                    vite_js=f"spa/{js_file}".replace("\\", "/"),
+                    vite_css=[f"spa/{c}".replace("\\", "/") for c in css_files],
+                )
+        except Exception:
+            pass
+
     return render_template(
         "ai.html",
         username=session.get("username", "User"),
         display_name=session.get("display_name", ""),
+        spa_missing=not manifest_path.exists(),
     )
 
 
@@ -2913,7 +3317,7 @@ def ai_home():
 @login_required
 def settings_page():
     if session.get("is_guest"):
-        return render_template("guest_register_required.html", title="Settings - Lamp")
+        return render_template("guest_register_required.html", title="Settings - yan")
     user_id = int(session["user_id"])
     profile = get_user_profile(user_id)
     billing = billing_status_for_user(user_id, requested_tz=None)
@@ -3009,7 +3413,7 @@ def api_billing_checkout():
     except Exception:
         pass
 
-    base = _public_base_url().rstrip("/") or request.url_root.rstrip("/")
+    base = _best_public_base_url().rstrip("/") or request.url_root.rstrip("/")
     success_url = base + "/upgrade?success=1"
     cancel_url = base + "/upgrade?canceled=1"
 
@@ -3052,7 +3456,7 @@ def api_billing_portal():
     if not customer_id:
         return jsonify({"error": "No Stripe customer found for this account yet."}), 400
 
-    base = _public_base_url().rstrip("/") or request.url_root.rstrip("/")
+    base = _best_public_base_url().rstrip("/") or request.url_root.rstrip("/")
     return_url = base + "/account"
 
     portal = stripe.billing_portal.Session.create(  # type: ignore[union-attr]
@@ -3449,7 +3853,7 @@ def api_ai_share_create(conversation_id: int):
     share = ai_create_or_rotate_share(conversation_id, user_id)
     if share is None:
         return jsonify({"error": "Not found"}), 404
-    base = _public_base_url()
+    base = _best_public_base_url()
     if base:
         url = base.rstrip("/") + "/share/" + share["token"]
     else:
@@ -3482,28 +3886,41 @@ def _reserve_ai_quota(user_id: int, requested_tz: str | None) -> tuple[bool, dic
     firebase_uid = str(session.get("firebase_uid") or "").strip()
     email = str(session.get("email") or "").strip().lower()
     if firebase_uid and _billing_firestore_client() is not None:
-        return _billing_firestore_reserve_daily_message(
+        eff_limit = effective_free_daily_limit_for_user(int(user_id))
+        ok2, quota2, reserved2 = _billing_firestore_reserve_daily_message(
             firebase_uid,
             email,
             plan_hint=plan_hint,
             requested_tz=requested_tz,
-            free_daily_limit=FREE_DAILY_MESSAGE_LIMIT,
+            free_daily_limit=eff_limit,
             user_id=int(user_id),
         )
+        # If Firestore reservation fails open (no limit/used fields), fall back to SQLite
+        # so Free plan enforcement still works.
+        if (
+            plan_hint not in PRO_PLANS
+            and int(eff_limit) > 0
+            and (not isinstance(quota2, dict) or not isinstance(quota2.get("limit", None), int) or not isinstance(quota2.get("used", None), int))
+        ):
+            # Continue to SQLite fallback below.
+            pass
+        else:
+            return ok2, quota2, reserved2
 
     # SQLite fallback.
     plan = FREE_PLAN
     user_tz = get_user_tz(user_id) or normalize_tz_name(str(requested_tz)) or normalize_tz_name((os.getenv("USAGE_TZ") or "").strip())
     day = usage_day_iso(user_tz)
-    if FREE_DAILY_MESSAGE_LIMIT <= 0:
+    eff_limit = effective_free_daily_limit_for_user(int(user_id))
+    if eff_limit <= 0:
         return True, {"plan": plan, "day": day, "tz": user_tz or ""}, False
     used = get_daily_message_count(user_id, day)
-    if used >= FREE_DAILY_MESSAGE_LIMIT:
+    if used >= eff_limit:
         return (
             False,
             {
                 "plan": plan,
-                "limit": FREE_DAILY_MESSAGE_LIMIT,
+                "limit": eff_limit,
                 "used": used,
                 "day": day,
                 "tz": user_tz or "",
@@ -3512,14 +3929,14 @@ def _reserve_ai_quota(user_id: int, requested_tz: str | None) -> tuple[bool, dic
             False,
         )
     new_count = reserve_daily_message(user_id, day)
-    if new_count > FREE_DAILY_MESSAGE_LIMIT:
+    if new_count > eff_limit:
         release_daily_message(user_id, day)
         return (
             False,
             {
                 "plan": plan,
-                "limit": FREE_DAILY_MESSAGE_LIMIT,
-                "used": FREE_DAILY_MESSAGE_LIMIT,
+                "limit": eff_limit,
+                "used": eff_limit,
                 "day": day,
                 "tz": user_tz or "",
                 "reset_at": next_reset_iso(user_tz),
@@ -3530,11 +3947,12 @@ def _reserve_ai_quota(user_id: int, requested_tz: str | None) -> tuple[bool, dic
         True,
         {
             "plan": plan,
-            "limit": FREE_DAILY_MESSAGE_LIMIT,
+            "limit": eff_limit,
             "used": new_count,
             "day": day,
             "tz": user_tz or "",
             "reset_at": next_reset_iso(user_tz),
+            "store": "sqlite",
         },
         True,
     )
@@ -3566,6 +3984,7 @@ def billing_status_for_user(user_id: int, requested_tz: str | None) -> dict[str,
     plan_hint = get_user_plan(user_id)
     tz = get_user_tz(user_id) or normalize_tz_name(str(requested_tz)) or normalize_tz_name((os.getenv("USAGE_TZ") or "").strip())
     day = usage_day_iso(tz)
+    eff_limit = effective_free_daily_limit_for_user(int(user_id))
 
     firebase_uid = str(session.get("firebase_uid") or "").strip()
     email = str(session.get("email") or "").strip().lower()
@@ -3576,13 +3995,19 @@ def billing_status_for_user(user_id: int, requested_tz: str | None) -> dict[str,
         last_reset = str(doc.get("last_reset_date") or "").strip()
         used = int(doc.get("messages_used_today") or 0)
         used_today = used if last_reset == day else 0
+        # If we had to fall back to SQLite for quota enforcement, reflect that usage too.
+        if plan not in PRO_PLANS and int(eff_limit) > 0:
+            try:
+                used_today = max(int(used_today), int(get_daily_message_count(user_id, day)))
+            except Exception:
+                pass
 
         return {
             "plan": plan,
             "day": day,
             "tz": tz or "",
             "reset_at": next_reset_iso(tz),
-            "free_daily_limit": int(FREE_DAILY_MESSAGE_LIMIT),
+            "free_daily_limit": int(eff_limit),
             "messages_used_today": used_today,
             "subscription_status": str(doc.get("subscription_status") or "").strip(),
             "current_period_end_utc": str(doc.get("current_period_end_utc") or "").strip(),
@@ -3594,7 +4019,7 @@ def billing_status_for_user(user_id: int, requested_tz: str | None) -> dict[str,
     # SQLite fallback.
     plan = plan_hint if plan_hint in {FREE_PLAN, *PRO_PLANS} else FREE_PLAN
     used_today = 0
-    if plan not in PRO_PLANS and int(FREE_DAILY_MESSAGE_LIMIT) > 0:
+    if plan not in PRO_PLANS and int(eff_limit) > 0:
         used_today = int(get_daily_message_count(user_id, day))
 
     sub = _billing_get_subscription(user_id) or {}
@@ -3603,7 +4028,7 @@ def billing_status_for_user(user_id: int, requested_tz: str | None) -> dict[str,
         "day": day,
         "tz": tz or "",
         "reset_at": next_reset_iso(tz),
-        "free_daily_limit": int(FREE_DAILY_MESSAGE_LIMIT),
+        "free_daily_limit": int(eff_limit),
         "messages_used_today": used_today,
         "subscription_status": str(sub.get("status") or "").strip(),
         "current_period_end_utc": str(sub.get("current_period_end_utc") or "").strip(),
@@ -3631,12 +4056,6 @@ def api_ai_stream(conversation_id: int):
     ok, quota, reserved = _reserve_ai_quota(user_id, requested_tz)
     if not ok:
         return jsonify({"error": "Daily free limit reached. Upgrade to Pro.", "quota": quota}), 429
-
-    current_client = get_openai_client()
-    if current_client is None:
-        if reserved:
-            _release_ai_quota_if_reserved(user_id, quota)
-        return jsonify({"error": "OPENAI_API_KEY is not set on the server."}), 500
 
     # Regenerate: delete last assistant message if present and reuse last user message.
     if regenerate:
@@ -3681,13 +4100,51 @@ def api_ai_stream(conversation_id: int):
 
         # Auto-title: first real user message.
         brief = ai_conversation_brief(conversation_id, user_id) or {}
-        if (brief.get("title") or "") == "New chat":
+        current_title = str(brief.get("title") or "").strip()
+        if current_title in {"", "New chat"}:
             title = re.sub(r"\s+", " ", message).strip()[:60]
             if title:
                 ai_update_conversation(conversation_id, user_id, title=title)
 
     else:
         inserted_user_message_id = None
+
+    special = canned_about_app_reply(message)
+    if special:
+        def gen_special():
+            try:
+                yield json.dumps({"type": "meta", "mode": (mode or "normal"), "quota": quota}, ensure_ascii=True) + "\n"
+                yield json.dumps({"type": "delta", "delta": special}, ensure_ascii=True) + "\n"
+                mid = ai_append_message(conversation_id, user_id, "assistant", special)
+                msg_obj = {
+                    "id": mid,
+                    "conversation_id": conversation_id,
+                    "role": "assistant",
+                    "content": special,
+                    "created_at_utc": utc_now_iso(),
+                    "edited_at_utc": "",
+                }
+                yield json.dumps({"type": "done", "assistant": msg_obj, "conversation": ai_conversation_brief(conversation_id, user_id)}, ensure_ascii=True) + "\n"
+            except Exception as exc:
+                if reserved:
+                    _release_ai_quota_if_reserved(user_id, quota)
+                if inserted_user_message_id is not None:
+                    try:
+                        ai_delete_message_and_after(conversation_id, user_id, inserted_user_message_id)
+                    except Exception:
+                        pass
+                yield json.dumps({"type": "error", "error": f"Special reply failed: {str(exc)}"}, ensure_ascii=True) + "\n"
+
+        resp = Response(gen_special(), mimetype="application/x-ndjson")
+        resp.headers["Cache-Control"] = "no-cache"
+        resp.headers["X-Accel-Buffering"] = "no"
+        return resp
+
+    current_client = get_openai_client()
+    if current_client is None:
+        if reserved:
+            _release_ai_quota_if_reserved(user_id, quota)
+        return jsonify({"error": "OPENAI_API_KEY is not set on the server."}), 500
 
     def gen():
         acc = ""
@@ -4215,6 +4672,7 @@ def account_update():
     profile = get_user_profile(user_id)
     if not profile:
         return redirect(url_for("auth_page", error="User profile not found."))
+    billing = billing_status_for_user(int(user_id), requested_tz=None)
 
     username = request.form.get("username", "").strip()
     # Allow partial updates (some tabs/forms may omit fields).
@@ -4232,6 +4690,8 @@ def account_update():
             error="Username must be 3-24 characters: letters, numbers, underscore.",
             message="",
             counts=follow_counts(int(user_id)),
+            billing=billing,
+            firebase_config=_firebase_web_config(),
         )
 
     def _looks_like_email(s: str) -> bool:
@@ -4245,6 +4705,7 @@ def account_update():
             error="Please enter a valid email address.",
             message="",
             counts=follow_counts(int(user_id)),
+            billing=billing,
             firebase_config=_firebase_web_config(),
         )
 
@@ -4260,6 +4721,8 @@ def account_update():
                 error="Age must be a number between 0 and 120.",
                 message="",
                 counts=follow_counts(int(user_id)),
+                billing=billing,
+                firebase_config=_firebase_web_config(),
             )
 
     conn = get_conn()
@@ -4273,6 +4736,7 @@ def account_update():
             error="Username is already taken.",
             message="",
             counts=follow_counts(int(user_id)),
+            billing=billing,
             firebase_config=_firebase_web_config(),
         )
 
@@ -4286,6 +4750,7 @@ def account_update():
                 error="Email is already in use.",
                 message="",
                 counts=follow_counts(int(user_id)),
+                billing=billing,
                 firebase_config=_firebase_web_config(),
             )
 
@@ -4302,6 +4767,7 @@ def account_update():
             error=str(exc),
             message="",
             counts=follow_counts(int(user_id)),
+            billing=billing,
             firebase_config=_firebase_web_config(),
         )
 
@@ -4465,236 +4931,6 @@ def chat():
     if not user_message:
         return jsonify({"error": "Message cannot be empty."}), 400
 
-    # Deterministic "about this app" answers should not depend on the LLM.
-    # Requirement: regardless of phrasing, if the intent is "who created you", answer must be "Erik Petrosyan".
-    def _maybe_creator_reply(msg: str) -> str | None:
-        m = (msg or "").strip()
-        if not m:
-            return None
-        ml = m.lower()
-
-        def _detect_lang(s: str) -> str:
-            # Rough but practical language detection for this single intent.
-            if re.search(r"[\u0530-\u058F]", s):  # Armenian
-                return "hy"
-            if re.search(r"[\u0400-\u04FF]", s):  # Cyrillic
-                return "ru"
-            if re.search(r"[\u0600-\u06FF]", s):  # Arabic/Persian
-                return "fa"
-            # German cues (keep before default English)
-            if re.search(r"(?:^|\\W)(wer|wem|erschaffen|erstellt|gemacht|entwickelt|autor)(?:$|\\W)", s):
-                return "de"
-            # Armenian latin translit cues
-            if re.search(r"(?:^|\\W)(ov|qez|dzez|stexc|stex|stexcel|sarq|heghinak|hexinak|hexinaki)(?:$|\\W)", s):
-                return "hy"
-            # Russian latin translit cues
-            if re.search(r"(?:^|\\W)(kto|kem|sozd|razrab)(?:$|\\W)", s):
-                return "ru"
-            return "en"
-
-        def _creator_sentence(lang: str) -> str:
-            # Keep deterministic reply strict: return just the author's name.
-            # (lang is kept for potential future customization.)
-            _ = lang
-            return "Erik Petrosyan"
-
-        # Intent signals in multiple languages (broad + tolerant of typos/slang).
-        q_words = {
-            "who",
-            "whom",
-            "creator",
-            "author",
-            "made",
-            "create",
-            "created",
-            "build",
-            "built",
-            "develop",
-            "developed",
-            "wrote",
-            # Armenian
-            "ով",
-            "ում",
-            "ովա",
-            "ով է",
-            "հարց",
-            # Armenian (latin translit)
-            "ov",
-            "um",
-            "harc",
-            # Russian
-            "кто",
-            "кем",
-            # Russian (latin translit)
-            "kto",
-            "kem",
-            # Persian
-            "چه",
-            "کی",
-        }
-        creator_words = {
-            "create",
-            "created",
-            "creator",
-            "make",
-            "made",
-            "build",
-            "built",
-            "develop",
-            "developed",
-            "author",
-            "write",
-            "wrote",
-            "programmed",
-            "coded",
-            # Armenian stems
-            "ստեղծ",
-            "սարք",
-            "հեղինակ",
-            "գրել",
-            "գրեց",
-            "կոդ",
-            # Armenian (latin translit)
-            "stex",
-            "stexc",
-            "stexel",
-            "stexelq",
-            "stexcel",
-            "stexcvel",
-            "sarq",
-            "sarqel",
-            "sarqac",
-            "heghinak",
-            "hexinak",
-            "hexinaki",
-            "hexinaky",
-            "koder",
-            "kodel",
-            # Russian stems
-            "создал",
-            "создали",
-            "создатель",
-            "сделал",
-            "сделали",
-            "разработал",
-            "разработчик",
-            # Russian (latin translit)
-            "sozd",
-            "razrab",
-            # Persian stems
-            "ساخت",
-            "ساخته",
-            "سازنده",
-            "توسعه",
-        }
-        you_words = {
-            "you",
-            "u",
-            "lamp",
-            # Armenian
-            "քեզ",
-            "քո",
-            "դու",
-            "ձեզ",
-            # Armenian (latin translit)
-            "qez",
-            "qo",
-            "du",
-            "dzez",
-            # Russian
-            "тебя",
-            "тво",
-            "вы",
-            # Russian (latin translit)
-            "tebya",
-            "tvoi",
-            "vy",
-            # Persian
-            "تو",
-            "شما",
-        }
-        bot_words = {
-            "bot",
-            "chatbot",
-            "assistant",
-            "app",
-            "site",
-            "program",
-            # Armenian
-            "բոտ",
-            "չաթբոտ",
-            "ծրագիր",
-            "կայք",
-        }
-
-        def _has_any_word(s: str, words: set[str]) -> bool:
-            substring_tokens = {
-                # Armenian (latin translit) stems; match inside longer words too.
-                "stex",
-                "stexc",
-                "stexcel",
-                "sarq",
-                "heghinak",
-                "hexinak",
-                "hexinaki",
-                "hexinaky",
-                # Russian (latin translit) stems
-                "sozd",
-                "razrab",
-            }
-
-            def _is_non_ascii(token: str) -> bool:
-                return any(ord(ch) > 127 for ch in token)
-
-            for w in words:
-                if not w:
-                    continue
-                if len(w) <= 2:
-                    # short tokens: substring match (handles "u", "ov" style)
-                    if w in s:
-                        return True
-                elif _is_non_ascii(w) or (w in substring_tokens):
-                    # Non-ASCII languages and stem tokens often appear with suffixes
-                    # ("հեղինակի", "ստեղծել", etc.), so substring match is pragmatic here.
-                    if w in s:
-                        return True
-                else:
-                    # word-ish match where possible
-                    if re.search(r"(?:^|\\W)" + re.escape(w) + r"(?:$|\\W)", s):
-                        return True
-            return False
-
-        talks_about_creation = _has_any_word(ml, creator_words)
-        very_short = len(re.findall(r"\\w+", ml)) <= 4
-        # If it's clearly a creator question (question-ish + creator-ish + about "you/Lamp"), match.
-        looks_like_question = ("?" in m) or _has_any_word(ml, q_words) or (very_short and talks_about_creation)
-        about_you = _has_any_word(ml, you_words)
-        mentions_bot = _has_any_word(ml, bot_words)
-
-        if looks_like_question and talks_about_creation and (about_you or mentions_bot):
-            return _creator_sentence(_detect_lang(ml))
-        # Also accept direct "creator/author" without explicit "you" (some users just ask "creator?" / "hexinaki?" / "author?")
-        if looks_like_question and talks_about_creation and (very_short or ("who" in ml) or ("ով" in ml) or ("кто" in ml) or ("سازنده" in ml)):
-            return _creator_sentence(_detect_lang(ml))
-        return None
-
-    special = _maybe_creator_reply(user_message)
-    if special:
-        user_id = session["user_id"]
-        chat_id = str(request.json.get("chat_id", "default")).strip() or "default"
-        mode = str(request.json.get("mode", "normal")).strip().lower()
-        if mode not in CHAT_MODES:
-            mode = "normal"
-        user_chats = get_user_chats(user_id)
-        history = user_chats.setdefault(chat_id, [])
-        history.append({"role": "user", "content": user_message})
-        history.append({"role": "assistant", "content": special})
-        return jsonify({"reply": special, "mode": mode, "special": "creator"})
-
-    current_client = get_openai_client()
-    if current_client is None:
-        return jsonify({"error": "OPENAI_API_KEY is not set on the server."}), 500
-
     user_id = int(session["user_id"])
     requested_tz = None
     try:
@@ -4705,6 +4941,24 @@ def chat():
     ok, quota, reserved = _reserve_ai_quota(user_id, requested_tz)
     if not ok:
         return jsonify({"error": "Daily free limit reached. Upgrade to Pro.", "quota": quota}), 429
+
+    special = canned_about_app_reply(user_message)
+    if special:
+        chat_id = str(request.json.get("chat_id", "default")).strip() or "default"
+        mode = str(request.json.get("mode", "normal")).strip().lower()
+        if mode not in CHAT_MODES:
+            mode = "normal"
+        user_chats = get_user_chats(user_id)
+        history = user_chats.setdefault(chat_id, [])
+        history.append({"role": "user", "content": user_message})
+        history.append({"role": "assistant", "content": special})
+        return jsonify({"reply": special, "mode": mode, "special": "about_app", "quota": quota})
+
+    current_client = get_openai_client()
+    if current_client is None:
+        if reserved:
+            _release_ai_quota_if_reserved(user_id, quota)
+        return jsonify({"error": "OPENAI_API_KEY is not set on the server."}), 500
 
     plan = str((quota or {}).get("plan") or FREE_PLAN).strip().lower() or FREE_PLAN
     chat_id = str(request.json.get("chat_id", "default")).strip() or "default"
@@ -4855,6 +5109,268 @@ def admin_feedback():
         limit=limit,
         token=request.args.get("token", ""),
     )
+
+
+@app.route("/admin/users", methods=["GET"])
+def admin_users():
+    ok, resp = admin_required()
+    if not ok:
+        if (os.getenv("ADMIN_TOKEN") or "").strip():
+            return resp, 403
+        return resp, 404
+
+    token = (request.args.get("token", "") or "").strip()
+    q = (request.args.get("q", "") or "").strip()
+    message = (request.args.get("message", "") or "").strip()
+    limit_raw = (request.args.get("limit", "") or "").strip()
+    try:
+        limit = int(limit_raw) if limit_raw else 500
+    except ValueError:
+        limit = 500
+    limit = max(1, min(5000, limit))
+
+    conn = get_conn()
+    users: list[dict[str, Any]] = []
+    try:
+        cur = conn.cursor()
+        needle = q.strip().lower()
+        if needle:
+            like = f"%{needle}%"
+            cur.execute(
+                """
+                SELECT id, username, COALESCE(email, ''), COALESCE(plan, ''), COALESCE(tz, ''),
+                       COALESCE(created_at_utc, ''), COALESCE(last_login_at_utc, ''), COALESCE(last_login_ip, ''),
+                       daily_limit_override
+                FROM users
+                WHERE LOWER(username) LIKE ? OR LOWER(COALESCE(email, '')) LIKE ?
+                ORDER BY id DESC
+                LIMIT ?
+                """,
+                (like, like, limit),
+            )
+        else:
+            cur.execute(
+                """
+                SELECT id, username, COALESCE(email, ''), COALESCE(plan, ''), COALESCE(tz, ''),
+                       COALESCE(created_at_utc, ''), COALESCE(last_login_at_utc, ''), COALESCE(last_login_ip, ''),
+                       daily_limit_override
+                FROM users
+                ORDER BY id DESC
+                LIMIT ?
+                """,
+                (limit,),
+            )
+        rows = cur.fetchall()
+        user_ids = [int(r[0]) for r in rows]
+
+        firebase_by_user: dict[int, str] = {}
+        if user_ids:
+            qs_marks = ",".join(["?"] * len(user_ids))
+            cur.execute(
+                f"""
+                SELECT user_id, provider_user_id
+                FROM identities
+                WHERE provider = 'firebase' AND user_id IN ({qs_marks})
+                """,
+                tuple(user_ids),
+            )
+            for r in cur.fetchall():
+                try:
+                    firebase_by_user[int(r[0])] = str(r[1] or "").strip()
+                except Exception:
+                    pass
+
+        usage_tz_default = normalize_tz_name((os.getenv("USAGE_TZ") or "").strip()) or "UTC"
+        for r in rows:
+            uid = int(r[0])
+            username = str(r[1] or "")
+            email = str(r[2] or "")
+            plan = (str(r[3] or "") or FREE_PLAN).strip().lower() or FREE_PLAN
+            tz = normalize_tz_name(str(r[4] or "")) or ""
+            created_at_utc = str(r[5] or "")
+            last_login_at_utc = str(r[6] or "")
+            last_login_ip = str(r[7] or "")
+            daily_limit_override = r[8]
+            try:
+                daily_limit_override = int(daily_limit_override) if daily_limit_override is not None else None
+            except Exception:
+                daily_limit_override = None
+
+            eff_limit = effective_free_daily_limit_for_user(uid)
+            day = usage_day_iso(tz or usage_tz_default)
+            used_today = 0
+            reset_at = ""
+            try:
+                reset_at = next_reset_iso(tz or usage_tz_default)
+            except Exception:
+                reset_at = ""
+            try:
+                used_today = int(get_daily_message_count(uid, day)) if plan not in PRO_PLANS else 0
+            except Exception:
+                used_today = 0
+
+            users.append(
+                {
+                    "id": uid,
+                    "username": username,
+                    "email": email,
+                    "plan": plan,
+                    "tz": tz,
+                    "created_at_utc": created_at_utc,
+                    "last_login_at_utc": last_login_at_utc,
+                    "last_login_ip": last_login_ip,
+                    "daily_limit_override": daily_limit_override,
+                    "effective_limit": eff_limit,
+                    "used_today": used_today,
+                    "reset_at": reset_at,
+                    "firebase_uid": firebase_by_user.get(uid, ""),
+                }
+            )
+    finally:
+        conn.close()
+
+    return render_template(
+        "admin_users.html",
+        users=users,
+        q=q,
+        message=message,
+        token=token,
+        free_daily_limit=int(FREE_DAILY_MESSAGE_LIMIT),
+        pro_plans=PRO_PLANS,
+        now_utc=utc_now_iso(),
+    )
+
+
+@app.route("/admin/users/<int:user_id>/plan", methods=["POST"])
+def admin_user_set_plan(user_id: int):
+    ok, resp = admin_required()
+    if not ok:
+        if (os.getenv("ADMIN_TOKEN") or "").strip():
+            return resp, 403
+        return resp, 404
+
+    token = (request.args.get("token", "") or "").strip()
+    plan = str(request.form.get("plan") or "").strip().lower()
+    if plan not in {FREE_PLAN, "pro", "ultimate"}:
+        return redirect(url_for("admin_users", token=token, message="Unsupported plan."))
+    desired = FREE_PLAN if plan == FREE_PLAN else ("ultimate" if plan == "ultimate" else "pro")
+
+    try:
+        _set_user_plan(int(user_id), desired)
+    except Exception:
+        return redirect(url_for("admin_users", token=token, message="Failed to update plan."))
+
+    try:
+        firebase_uid = _firebase_uid_for_user_id(int(user_id))
+        if firebase_uid:
+            doc_ref = _billing_firestore_doc(firebase_uid)
+            if doc_ref is not None:
+                doc_ref.set({"uid": firebase_uid, "plan_type": desired, "updated_at_utc": utc_now_iso()}, merge=True)
+    except Exception:
+        pass
+
+    return redirect(url_for("admin_users", token=token, message=f"Plan updated for user {user_id} -> {desired}"))
+
+
+@app.route("/admin/users/<int:user_id>/limit", methods=["POST"])
+def admin_user_set_limit(user_id: int):
+    ok, resp = admin_required()
+    if not ok:
+        if (os.getenv("ADMIN_TOKEN") or "").strip():
+            return resp, 403
+        return resp, 404
+    token = (request.args.get("token", "") or "").strip()
+
+    raw = str(request.form.get("limit") or "").strip()
+    if raw == "":
+        try:
+            set_user_daily_limit_override(int(user_id), None)
+        except Exception:
+            return redirect(url_for("admin_users", token=token, message="Failed to clear limit override."))
+        return redirect(url_for("admin_users", token=token, message=f"Limit override cleared for user {user_id}"))
+
+    try:
+        n = int(raw)
+    except ValueError:
+        return redirect(url_for("admin_users", token=token, message="Limit must be an integer (or empty)."))
+    if n < 0 or n > 100000:
+        return redirect(url_for("admin_users", token=token, message="Limit must be between 0 and 100000."))
+
+    try:
+        set_user_daily_limit_override(int(user_id), int(n))
+    except Exception:
+        return redirect(url_for("admin_users", token=token, message="Failed to update limit override."))
+
+    return redirect(url_for("admin_users", token=token, message=f"Limit override set for user {user_id} -> {n}"))
+
+
+@app.route("/admin/users/<int:user_id>/reset-usage", methods=["POST"])
+def admin_user_reset_usage(user_id: int):
+    ok, resp = admin_required()
+    if not ok:
+        if (os.getenv("ADMIN_TOKEN") or "").strip():
+            return resp, 403
+        return resp, 404
+    token = (request.args.get("token", "") or "").strip()
+    scope = str(request.form.get("scope") or "today").strip().lower()
+    if scope not in {"today", "all"}:
+        scope = "today"
+
+    conn = get_conn()
+    try:
+        cur = conn.cursor()
+        if scope == "all":
+            cur.execute("DELETE FROM daily_message_usage WHERE user_id = ?", (int(user_id),))
+        else:
+            tz = get_user_tz(int(user_id)) or normalize_tz_name((os.getenv("USAGE_TZ") or "").strip()) or "UTC"
+            day = usage_day_iso(tz)
+            cur.execute("DELETE FROM daily_message_usage WHERE user_id = ? AND day = ?", (int(user_id), day))
+        conn.commit()
+    finally:
+        conn.close()
+
+    if scope != "all":
+        try:
+            firebase_uid = _firebase_uid_for_user_id(int(user_id))
+            if firebase_uid and _billing_firestore_client() is not None:
+                tz = get_user_tz(int(user_id)) or normalize_tz_name((os.getenv("USAGE_TZ") or "").strip()) or "UTC"
+                day = usage_day_iso(tz)
+                doc_ref = _billing_firestore_doc(firebase_uid)
+                if doc_ref is not None:
+                    doc_ref.set({"uid": firebase_uid, "last_reset_date": day, "messages_used_today": 0, "updated_at_utc": utc_now_iso()}, merge=True)
+        except Exception:
+            pass
+
+    return redirect(url_for("admin_users", token=token, message=f"Usage reset ({scope}) for user {user_id}"))
+
+
+@app.route("/admin/users/<int:user_id>/force-revoke-pro", methods=["POST"])
+def admin_user_force_revoke_pro(user_id: int):
+    ok, resp = admin_required()
+    if not ok:
+        if (os.getenv("ADMIN_TOKEN") or "").strip():
+            return resp, 403
+        return resp, 404
+    token = (request.args.get("token", "") or "").strip()
+
+    try:
+        _set_user_plan(int(user_id), FREE_PLAN)
+    except Exception:
+        return redirect(url_for("admin_users", token=token, message="Failed to set user plan to free."))
+
+    try:
+        _billing_clear_subscription_local(int(user_id))
+    except Exception:
+        pass
+
+    try:
+        firebase_uid = _firebase_uid_for_user_id(int(user_id))
+        if firebase_uid:
+            _billing_force_revoke_firestore_entitlements(firebase_uid)
+    except Exception:
+        pass
+
+    return redirect(url_for("admin_users", token=token, message=f"Pro entitlements revoked for user {user_id}"))
 
 
 @app.route("/admin/feedback/delete", methods=["POST"])
@@ -5155,4 +5671,4 @@ if __name__ == "__main__":
     if socketio is not None:
         socketio.run(app, host=host, port=port, debug=debug)
     else:
-        app.run(host=host, port=port, debug=debug)
+         app.run(host=host, port=port, debug=debug)

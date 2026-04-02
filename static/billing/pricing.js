@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const cfg = window.__Lamp_BILLING__ || {};
+  const cfg = window.__yan_BILLING__ || {};
 
   const elMonthlyBtn = document.getElementById("monthlyBtn");
   const elYearlyBtn = document.getElementById("yearlyBtn");

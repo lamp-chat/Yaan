@@ -3,10 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Upgrade Plan · Lamp</title>
+  <title>Upgrade Plan - yan</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='billing/pricing.css', v=static_v) }}">
+  <script>document.documentElement.classList.add("fx")</script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand/motion.css', v=static_v) }}">
   <script>
-    window.__Lamp_BILLING__ = {
+    window.__yan_BILLING__ = {
       stripeEnabled: {{ stripe_enabled|tojson }},
       currentPlan: {{ current_plan|tojson }},
       freeDailyLimit: {{ free_daily_limit|tojson }},
@@ -15,15 +17,16 @@
     };
   </script>
   <script src="{{ url_for('static', filename='billing/pricing.js', v=static_v) }}" defer></script>
+  <script src="{{ url_for('static', filename='brand/motion.js', v=static_v) }}" defer></script>
 </head>
 <body>
   <div class="bg" aria-hidden="true"></div>
 
-  <header class="top">
+  <header class="top" data-reveal>
     <a class="brand" href="/ai">
-      <img class="logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="Lamp">
+      <img class="logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="yan">
       <div class="brand__meta">
-        <div class="brand__name">Lamp</div>
+        <div class="brand__name">yan</div>
         <div class="brand__sub">Upgrade Plan</div>
       </div>
     </a>
@@ -34,11 +37,11 @@
     </div>
   </header>
 
-  <main class="wrap">
+  <main class="wrap" data-reveal>
     <section class="hero">
       <h1>Upgrade your thinking OS.</h1>
       <p class="sub">
-        Choose a plan that matches how you build, learn, and create with Lamp.
+        Choose a plan that matches how you build, learn, and create with yan.
       </p>
 
       <div class="toggle" role="group" aria-label="Billing period">
@@ -49,7 +52,7 @@
       </div>
 
       <div class="notice" id="stripeNotice" hidden>
-        Billing isn’t configured yet. Set `STRIPE_SECRET_KEY` and price IDs to enable checkout.
+        Billing isn't configured yet. Set `STRIPE_SECRET_KEY` and price IDs to enable checkout.
       </div>
     </section>
 
@@ -61,7 +64,7 @@
             <span class="price__amt">$0</span>
             <span class="price__per">/ mo</span>
           </div>
-          <div class="hint">Great for trying Lamp.</div>
+          <div class="hint">Great for trying yan.</div>
         </div>
         <ul class="list">
           <li><span class="dot"></span><span><strong id="freeLimit"></strong> AI messages per day</span></li>

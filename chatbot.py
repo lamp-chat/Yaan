@@ -282,7 +282,7 @@ def handle_command(command: str, arg: str, session: ChatSession) -> bool:
 
 
 def run_chat(client: OpenAI, session: ChatSession) -> None:
-    print("Lamp started. Type /help for commands.")
+    print("yan started. Type /help for commands.")
     while True:
         try:
             raw = input("You: ").strip()

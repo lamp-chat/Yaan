@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lamp</title>
-  <meta name="description" content="Lamp is an AI chat assistant with user-to-user messaging and calls.">
+  <title>yan</title>
+  <meta name="description" content="yan is an AI chat assistant with user-to-user messaging and calls.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="/">
 
@@ -13,6 +13,9 @@
 
   <link rel="stylesheet" href="{{ url_for('static', filename='brand/splash.css', v=static_v) }}">
   <script src="{{ url_for('static', filename='brand/splash.js', v=static_v) }}" defer></script>
+  <script>document.documentElement.classList.add("fx")</script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand/motion.css', v=static_v) }}">
+  <script src="{{ url_for('static', filename='brand/motion.js', v=static_v) }}" defer></script>
 
   <style>
     :root {
@@ -341,21 +344,21 @@
   </style>
 </head>
 <body>
-  <div id="lampSplash" class="lamp-splash" aria-hidden="true">
-    <div class="lamp-splash__inner">
-      <img class="lamp-splash__logo" src="{{ url_for('static', filename='brand/logo.png') }}" alt="Lamp">
-      <div class="lamp-splash__word">Lamp</div>
-      <div class="lamp-splash__rule"></div>
+  <div id="yanSplash" class="yan-splash" aria-hidden="true">
+    <div class="yan-splash__inner">
+      <img class="yan-splash__logo" src="{{ url_for('static', filename='brand/logo.png') }}" alt="yan">
+      <div class="yan-splash__word">yan</div>
+      <div class="yan-splash__rule"></div>
     </div>
-    <button class="lamp-splash__skip" type="button" data-splash-skip>Skip</button>
+    <button class="yan-splash__skip" type="button" data-splash-skip>Skip</button>
   </div>
 
   <div class="lp">
     <div class="lp-main">
-      <section class="lp-left">
+      <section class="lp-left" data-reveal>
         <a class="lp-brand" href="/" data-nav>
-          <img class="lp-logo" src="{{ url_for('static', filename='brand/logo.png') }}" alt="Lamp">
-          <span class="lp-word">Lamp</span>
+          <img class="lp-logo" src="{{ url_for('static', filename='brand/logo.png') }}" alt="yan">
+          <span class="lp-word">yan</span>
         </a>
 
         <div class="lp-hero">
@@ -378,9 +381,9 @@
         </div>
       </section>
 
-      <aside class="lp-right">
+      <aside class="lp-right" data-reveal>
         <div class="login">
-          <h2>Sign in to Lamp</h2>
+          <h2>Sign in to yan</h2>
           <input class="field" placeholder="Username / Email" disabled>
           <input class="field" placeholder="Password" type="password" disabled>
           <a class="btn primary" href="/auth" data-nav>Open Sign In</a>
@@ -397,7 +400,7 @@
       <a href="/feedback" data-nav>Feedback</a>
       <a href="/sitemap.xml" data-nav>Sitemap</a>
       <a href="/robots.txt" data-nav>Robots</a>
-      <span>2026 Lamp</span>
+      <span>2026 yan</span>
     </footer>
   </div>
 </body>

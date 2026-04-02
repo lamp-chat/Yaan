@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Feedback - Lamp</title>
+  <title>Feedback - yan</title>
   <script src="{{ url_for('static', filename='brand/i18n.js', v=static_v) }}" defer></script>
+  <script>document.documentElement.classList.add("fx")</script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='brand/motion.css', v=static_v) }}">
+  <script src="{{ url_for('static', filename='brand/motion.js', v=static_v) }}" defer></script>
   <meta name="robots" content="noindex, nofollow">
   <style>
     :root {
@@ -276,12 +279,12 @@
 </head>
 <body>
   <div class="wrap">
-    <main class="shell">
+<main class="shell" data-reveal>
       <header class="head">
         <div class="brand">
-          <img class="logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="Lamp logo">
+          <img class="logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="yan logo">
           <div class="title">
-            <strong>Lamp</strong>
+            <strong>yan</strong>
             <span>
               {% if (display_name or username) %}
                 <span data-i18n="signed_in_as">Signed in as</span> {{ (display_name or username)|e }}
