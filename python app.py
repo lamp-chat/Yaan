@@ -14,7 +14,7 @@ from urllib.parse import urlsplit, urlunsplit
 from uuid import uuid4
 
 from authlib.integrations.flask_client import OAuth
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for, Response, abort
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, Response, abort, send_file
 from openai import OpenAI
 from werkzeug.utils import secure_filename
 
@@ -5104,6 +5104,18 @@ def feedback_page():
 def robots():
     content = "User-agent: *\nAllow: /\nSitemap: " + url_for("sitemap", _external=True) + "\n"
     return Response(content, mimetype="text/plain")
+
+
+@app.route("/favicon.ico")
+def favicon():
+    # Browsers request /favicon.ico by default. Serve our brand mark.
+    try:
+        p = Path(app.static_folder or "static") / "brand" / "bulb.png"
+        if p.exists():
+            return send_file(str(p), mimetype="image/png", max_age=86400)
+    except Exception:
+        pass
+    return Response("", status=404)
 
 
 @app.route("/sitemap.xml")
