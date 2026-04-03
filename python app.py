@@ -83,6 +83,29 @@ app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+def _clear_session_cookies(resp):
+    """
+    Be defensive: in some deployments the session cookie can be set with or without an explicit
+    domain (or with a leading dot). Clear all common variants so `/auth` won't bounce back to `/app`.
+    """
+    name = str(app.config.get("SESSION_COOKIE_NAME") or "session")
+    domain = app.config.get("SESSION_COOKIE_DOMAIN") or None
+    try:
+        resp.delete_cookie(name, path="/")
+    except Exception:
+        pass
+    if domain:
+        try:
+            resp.delete_cookie(name, path="/", domain=domain)
+        except Exception:
+            pass
+        if isinstance(domain, str) and domain and (not domain.startswith(".")):
+            try:
+                resp.delete_cookie(name, path="/", domain="." + domain)
+            except Exception:
+                pass
+    return resp
+
 
 def \
         _load_dotenv_if_present():
@@ -3318,6 +3341,7 @@ def logout():
         conversations.pop(user_id, None)
     session.clear()
     resp = redirect(url_for("auth_page", message="Logged out."))
+    _clear_session_cookies(resp)
     # Prevent browsers/proxies from caching the redirect target.
     resp.headers["Cache-Control"] = "no-store, max-age=0"
     resp.headers["Pragma"] = "no-cache"
