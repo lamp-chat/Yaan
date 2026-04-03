@@ -75,12 +75,12 @@
     focusMode: false,
   };
 
-  const SOUND_KEY = "yan_sound_enabled";
+  const SOUND_KEY = "yaan_sound_enabled";
   const FOCUS_KEY = "lamp_focus_mode";
-  const THEME_KEY = "yan_theme";
+  const THEME_KEY = "yaan_theme";
   const DRAFT_KEY_PREFIX = "lamp_draft_";
-  const REACT_KEY_PREFIX = "yan_react_";
-  const MODE_DEFAULT_KEY = "yan_mode_default";
+  const REACT_KEY_PREFIX = "yaan_react_";
+  const MODE_DEFAULT_KEY = "yaan_mode_default";
   let audioCtx = null;
 
   function getSystemTheme() {
@@ -670,7 +670,7 @@
       const meta = document.createElement("div");
       meta.className = "meta";
       const left = document.createElement("div");
-      left.textContent = `${m.role === "user" ? "You" : "yan"} - ${fmtTime(m.created_at_utc)}${m.edited_at_utc ? " - edited" : ""}`;
+      left.textContent = `${m.role === "user" ? "You" : "Yaan"} - ${fmtTime(m.created_at_utc)}${m.edited_at_utc ? " - edited" : ""}`;
       const actions = document.createElement("div");
       actions.className = "actions";
 
@@ -931,7 +931,7 @@
     requestAnimationFrame(() => scrollToBottom());
     playSound(regenerate ? "toggle" : "send");
 
-    elChatMeta.textContent = "yan is thinking...";
+    elChatMeta.textContent = "Yaan is thinking...";
 
     try {
       const res = await fetch(`/api/ai/conversations/${conversationId}/stream`, {
@@ -1570,13 +1570,13 @@
 
   function toTxt(msgs) {
     return msgs
-      .map((m) => `${m.role === "user" ? "You" : "yan"} (${fmtTime(m.created_at_utc)}):\n${m.content}\n`)
+      .map((m) => `${m.role === "user" ? "You" : "Yaan"} (${fmtTime(m.created_at_utc)}):\n${m.content}\n`)
       .join("\n");
   }
 
   function toMd(msgs) {
     return msgs
-      .map((m) => `### ${m.role === "user" ? "You" : "yan"}\n\n${m.content}\n`)
+      .map((m) => `### ${m.role === "user" ? "You" : "Yaan"}\n\n${m.content}\n`)
       .join("\n");
   }
 

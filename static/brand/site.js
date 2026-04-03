@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const THEME_KEY = "yan_theme";
+  const THEME_KEY = "yaan_theme";
 
   function getSystemTheme() {
     try {

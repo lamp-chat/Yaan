@@ -6,7 +6,7 @@ import { api, tzName } from "./lib/api.js";
 import { useI18n } from "./lib/i18n.js";
 import * as sfx from "./lib/sfx.js";
 
-const REACT_KEY_PREFIX = "yan_react_";
+const REACT_KEY_PREFIX = "yaan_react_";
 
 function reactKey(messageId) {
   return REACT_KEY_PREFIX + String(messageId || "");
@@ -38,15 +38,15 @@ function useLocalStorageBool(key, fallback = false) {
 
 export default function App() {
   const { t } = useI18n();
-  const username = (window.__yan__ && window.__yan__.displayName) || "User";
-  const csrfToken = (window.__yan__ && window.__yan__.csrfToken) || "";
+  const username = (window.__yaan__ && window.__yaan__.displayName) || "User";
+  const csrfToken = (window.__yaan__ && window.__yaan__.csrfToken) || "";
 
   const [introVisible, setIntroVisible] = useState(() => {
-    try { return window.sessionStorage.getItem("yan_intro_seen") !== "1"; } catch { return true; }
+    try { return window.sessionStorage.getItem("yaan_intro_seen") !== "1"; } catch { return true; }
   });
   const [introLeaving, setIntroLeaving] = useState(false);
 
-  const [soundEnabled, setSoundEnabled] = useLocalStorageBool("yan_sound_enabled", false);
+  const [soundEnabled, setSoundEnabled] = useLocalStorageBool("yaan_sound_enabled", false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [phonePanelOpen, setPhonePanelOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -64,7 +64,7 @@ export default function App() {
   const [quotaState, setQuotaState] = useState(null); // { plan, used, limit, resetAtIso, resetAtMs }
   const [quotaRemaining, setQuotaRemaining] = useState("");
   const [mode, setMode] = useState(() => {
-    try { return (window.localStorage.getItem("yan_mode_default") || "normal").trim().toLowerCase() || "normal"; } catch { return "normal"; }
+    try { return (window.localStorage.getItem("yaan_mode_default") || "normal").trim().toLowerCase() || "normal"; } catch { return "normal"; }
   });
 
   const threadRef = useRef(null);
@@ -118,7 +118,7 @@ export default function App() {
 
   // Theme toggling lives in Settings. We still ensure the attribute is applied in SPA.
   useEffect(() => {
-    const KEY = "yan_theme";
+    const KEY = "yaan_theme";
     try {
       const t = (window.localStorage.getItem(KEY) || "").trim().toLowerCase();
       const val = (t === "light" || t === "dark") ? t : "dark";
@@ -423,7 +423,7 @@ export default function App() {
     if (!introVisible) return;
     if (introLeaving) return;
     setIntroLeaving(true);
-    try { window.sessionStorage.setItem("yan_intro_seen", "1"); } catch {}
+    try { window.sessionStorage.setItem("yaan_intro_seen", "1"); } catch {}
     window.setTimeout(() => {
       setIntroVisible(false);
       setIntroLeaving(false);
@@ -525,7 +525,7 @@ export default function App() {
 
   function doLogout() {
     // Use real form POST so server can enforce CSRF and then redirect.
-    try { window.sessionStorage.removeItem("yan_intro_seen"); } catch {}
+    try { window.sessionStorage.removeItem("yaan_intro_seen"); } catch {}
     const form = document.createElement("form");
     form.method = "POST";
     form.action = "/logout";
@@ -566,13 +566,13 @@ export default function App() {
             <div className="intro__top">
               <div className="intro__brand">
                 <div className="intro__logo">
-                  <img src="/static/brand/logo.png" alt="yan" />
+                  <img src="/static/brand/logo.png" alt="Yaan" />
                 </div>
-                  <div className="intro__meta">
-                    <div className="intro__name">YAN</div>
-                    <div className="intro__sub">{t("minimal_ai_workspace")}</div>
-                  </div>
+                <div className="intro__meta">
+                  <div className="intro__name">Yaan</div>
+                  <div className="intro__sub">{t("minimal_ai_workspace")}</div>
                 </div>
+              </div>
                 <button className="intro__skip" type="button" onClick={() => dismissIntro(true)}>
                   {t("skip")}
                 </button>
@@ -679,7 +679,7 @@ export default function App() {
                   onChange={(e) => {
                     const v = e.target.value;
                     setMode(v);
-                    try { window.localStorage.setItem("yan_mode_default", v); } catch {}
+                    try { window.localStorage.setItem("yaan_mode_default", v); } catch {}
                   }}
                   title={t("mode")}
                 >

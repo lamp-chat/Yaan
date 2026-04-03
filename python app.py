@@ -194,17 +194,17 @@ conversations = {}
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 CHAT_MODES = {
-    "normal": "You are yan, a helpful assistant.",
+    "normal": "You are Yaan, a helpful assistant.",
     # Next-gen modes
-    "creative": "You are yan in Creative Mode. Be imaginative, playful, and practical. Offer multiple options and bold ideas.",
-    "coding": "You are yan in Coding Mode. Be precise, include correct code, explain tradeoffs, and suggest tests and edge cases.",
-    "research": "You are yan in Research Mode. Ask clarifying questions, be careful with uncertainty, and structure the answer with claims and caveats. If you cannot browse, say so.",
-    "learning": "You are yan in Learning Mode. Teach step-by-step, check understanding, and include short exercises or examples.",
-    "business": "You are yan in Business Mode. Be concise, decision-oriented, and focus on ROI, risks, and next steps.",
-    "translator": "You are yan in Translator Mode. Translate and improve text naturally, keeping meaning intact.",
+    "creative": "You are Yaan in Creative Mode. Be imaginative, playful, and practical. Offer multiple options and bold ideas.",
+    "coding": "You are Yaan in Coding Mode. Be precise, include correct code, explain tradeoffs, and suggest tests and edge cases.",
+    "research": "You are Yaan in Research Mode. Ask clarifying questions, be careful with uncertainty, and structure the answer with claims and caveats. If you cannot browse, say so.",
+    "learning": "You are Yaan in Learning Mode. Teach step-by-step, check understanding, and include short exercises or examples.",
+    "business": "You are Yaan in Business Mode. Be concise, decision-oriented, and focus on ROI, risks, and next steps.",
+    "translator": "You are Yaan in Translator Mode. Translate and improve text naturally, keeping meaning intact.",
     # Back-compat aliases
-    "teacher": "You are yan in Learning Mode. Teach step-by-step, check understanding, and include short exercises or examples.",
-    "brainstorm": "You are yan in Creative Mode. Be imaginative, playful, and practical. Offer multiple options and bold ideas.",
+    "teacher": "You are Yaan in Learning Mode. Teach step-by-step, check understanding, and include short exercises or examples.",
+    "brainstorm": "You are Yaan in Creative Mode. Be imaginative, playful, and practical. Offer multiple options and bold ideas.",
 }
 
 oauth = OAuth(app)
@@ -2702,18 +2702,18 @@ def canned_about_app_reply(user_message: str) -> str | None:
     def reply_company_owner(lang_code: str) -> str:
         # Keep it short, and never mention OpenAI/ChatGPT per product requirement.
         if lang_code == "hy":
-            return "YAN Company։ Տեր՝ Erik Petrosyan։"
+            return "Yaan Company։ Տեր՝ Erik Petrosyan։"
         if lang_code == "ru":
-            return "YAN Company. Владелец: Erik Petrosyan."
+            return "Yaan Company. Владелец: Erik Petrosyan."
         if lang_code == "uk":
-            return "YAN Company. Власник: Erik Petrosyan."
+            return "Yaan Company. Власник: Erik Petrosyan."
         if lang_code == "de":
-            return "YAN Company. Inhaber: Erik Petrosyan."
+            return "Yaan Company. Inhaber: Erik Petrosyan."
         if lang_code == "fa":
-            return "YAN Company. مالک: Erik Petrosyan."
-        return "YAN Company. Owner: Erik Petrosyan."
+            return "Yaan Company. مالک: Erik Petrosyan."
+        return "Yaan Company. Owner: Erik Petrosyan."
 
-    # Intent: "who created you / who made yan"
+    # Intent: "who created you / who made yaan"
     creator_tokens = [
         # English
         "create",
@@ -2751,7 +2751,7 @@ def canned_about_app_reply(user_message: str) -> str | None:
     you_tokens = [
         "you",
         "u",
-        "yan",
+        "yaan",
         # Armenian
         "քեզ",
         "ձեզ",
@@ -3374,8 +3374,8 @@ def landing():
         return redirect(url_for("app_home"))
     # Default: send users straight to the real auth flow.
     # Optionally expose a public marketing landing page at `/` via env.
-    # - YAN_ROOT_PAGE=landing => render templates/landing.html
-    root_page = str(os.getenv("YAN_ROOT_PAGE", "") or "").strip().lower()
+    # - Yaan_ROOT_PAGE=landing => render templates/landing.html
+    root_page = str(os.getenv("Yaan_ROOT_PAGE", "") or "").strip().lower()
     if root_page == "landing":
         return render_template("landing.html")
     return redirect(url_for("auth_page"))
@@ -3397,9 +3397,9 @@ def app_home():
 def ai_home():
     # Prefer the React/Tailwind SPA build if present.
     # You can force behavior via env:
-    # - YAN_USE_SPA=1  => always try SPA first
-    # - YAN_USE_SPA=0  => always use server-rendered template UI
-    use_spa_raw = str(os.getenv("YAN_USE_SPA", "") or "").strip().lower()
+    # - Yaan_USE_SPA=1  => always try SPA first
+    # - Yaan_USE_SPA=0  => always use server-rendered template UI
+    use_spa_raw = str(os.getenv("Yaan_USE_SPA", "") or "").strip().lower()
     use_spa_forced = None
     if use_spa_raw in ("1", "true", "yes", "on"):
         use_spa_forced = True
@@ -3438,7 +3438,7 @@ def ai_home():
 @login_required
 def settings_page():
     if session.get("is_guest"):
-        return render_template("guest_register_required.html", title="Settings - yan")
+        return render_template("guest_register_required.html", title="Settings - yaan")
     user_id = int(session["user_id"])
     profile = get_user_profile(user_id)
     billing = billing_status_for_user(user_id, requested_tz=None)

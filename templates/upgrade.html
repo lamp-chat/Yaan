@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Upgrade Plan - yan</title>
+  <title>Upgrade Plan - Yaan</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='billing/pricing.css', v=static_v) }}">
   <script>document.documentElement.classList.add("fx")</script>
   <link rel="stylesheet" href="{{ url_for('static', filename='brand/motion.css', v=static_v) }}">
   <script>
-    window.__yan_BILLING__ = {
+    window.__yaan_BILLING__ = {
       stripeEnabled: {{ stripe_enabled|tojson }},
       currentPlan: {{ current_plan|tojson }},
       freeDailyLimit: {{ free_daily_limit|tojson }},
@@ -24,9 +24,9 @@
 
   <header class="top" data-reveal>
     <a class="brand" href="/ai">
-      <img class="logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="yan">
+      <img class="logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="Yaan">
       <div class="brand__meta">
-        <div class="brand__name">yan</div>
+        <div class="brand__name">Yaan</div>
         <div class="brand__sub">Upgrade Plan</div>
       </div>
     </a>
@@ -41,7 +41,7 @@
     <section class="hero">
       <h1>Upgrade your thinking OS.</h1>
       <p class="sub">
-        Choose a plan that matches how you build, learn, and create with yan.
+        Choose a plan that matches how you build, learn, and create with Yaan.
       </p>
 
       <div class="toggle" role="group" aria-label="Billing period">
@@ -64,7 +64,7 @@
             <span class="price__amt">$0</span>
             <span class="price__per">/ mo</span>
           </div>
-          <div class="hint">Great for trying yan.</div>
+          <div class="hint">Great for trying Yaan.</div>
         </div>
         <ul class="list">
           <li><span class="dot"></span><span><strong id="freeLimit"></strong> AI messages per day</span></li>

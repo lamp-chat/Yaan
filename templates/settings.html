@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Settings - yan</title>
+  <title>Settings - Yaan</title>
 
   <link rel="stylesheet" href="{{ url_for('static', filename='brand/site.css', v=static_v) }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='brand/motion.css', v=static_v) }}">
@@ -144,10 +144,10 @@
 <body>
   <div class="wrap" data-reveal>
     <header class="top glass">
-      <a class="brand" href="/ai" data-nav aria-label="yan AI chat">
-        <img class="logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="yan">
+      <a class="brand" href="/ai" data-nav aria-label="Yaan AI chat">
+        <img class="logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="Yaan">
         <div>
-          <div class="brand__name">yan</div>
+          <div class="brand__name">Yaan</div>
           <div class="brand__sub" data-i18n="settings">Settings</div>
         </div>
       </a>
@@ -164,7 +164,7 @@
     <div class="grid">
       <section class="card glass">
         <h2 data-i18n="settings">Settings</h2>
-        <p data-i18n="settings_sub">Make yan feel like yours: theme, language, chat defaults.</p>
+        <p data-i18n="settings_sub">Make yaan feel like yours: theme, language, chat defaults.</p>
 
         <div class="section" aria-label="Appearance">
           <div class="row">
@@ -277,8 +277,8 @@
 
   <script>
     (function () {
-      const THEME_KEY = "yan_theme";
-      const MODE_KEY = "yan_mode_default";
+      const THEME_KEY = "yaan_theme";
+      const MODE_KEY = "yaan_mode_default";
 
       const themeBtns = Array.from(document.querySelectorAll("[data-theme-pick]"));
       const langBtns = Array.from(document.querySelectorAll("[data-lang]"));
@@ -353,7 +353,7 @@
       if (resetUiBtn) {
         resetUiBtn.addEventListener("click", () => {
           try {
-            localStorage.removeItem("yan_sound_enabled");
+            localStorage.removeItem("yaan_sound_enabled");
             localStorage.removeItem("lamp_focus_mode");
             localStorage.removeItem(THEME_KEY);
           } catch (e) {}

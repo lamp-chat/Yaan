@@ -21,7 +21,7 @@ function ensureAudio() {
 }
 
 function isEnabled() {
-  try { return window.localStorage.getItem("yan_sound_enabled") === "1"; } catch { return false; }
+  try { return window.localStorage.getItem("yaan_sound_enabled") === "1"; } catch { return false; }
 }
 
 export async function startIntroMusic() {

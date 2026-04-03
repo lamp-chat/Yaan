@@ -58,7 +58,7 @@ export default function MessageBubble({ msg, onCopy, onReact }) {
   const { t } = useI18n();
   const isUser = msg.role === "user";
   const meta = [
-    isUser ? t("you") : "yan",
+    isUser ? t("you") : "Yaan",
     msg.created_at_utc ? fmtTime(msg.created_at_utc) : "",
     msg.edited_at_utc ? t("edited") : "",
   ].filter(Boolean).join(" - ");

@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='brand/motion.css', v=static_v) }}">
   <script src="{{ url_for('static', filename='brand/i18n.js', v=static_v) }}" defer></script>
   <script>
-    window.__yan__ = {
+    window.__yaan__ = {
       username: {{ (username or "User")|tojson }},
       displayName: {{ (display_name or username or "User")|tojson }},
     };
@@ -25,10 +25,10 @@
   <div class="app" id="app"> 
     <aside class="sidebar glass" id="sidebar">
       <div class="sb-top">
-        <a class="brand" href="/ai" title="yan">
-          <img class="brand__logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="yan">
+        <a class="brand" href="/ai" title="Yaan">
+          <img class="brand__logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="Yaan">
           <div class="brand__meta">
-            <div class="brand__name">yan</div>
+            <div class="brand__name">Yaan</div>
             <div class="brand__sub">AI Assistant</div>
           </div>
         </a>
@@ -134,7 +134,7 @@
               <svg viewBox="0 0 24 24" fill="none"><path d="M21 12.5 12.6 20.9a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.8-8.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 
             </span> 
           </button> 
-          <textarea id="input" class="chat-compose__input" placeholder="Message yan... (Enter to send, Shift+Enter for new line)" rows="1"></textarea> 
+          <textarea id="input" class="chat-compose__input" placeholder="Message Yaan... (Enter to send, Shift+Enter for new line)" rows="1"></textarea> 
           <button class="btn ghost" id="improveBtn" type="button" title="Improve prompt">Improve</button> 
           <button class="btn primary" id="sendBtn" type="button">Send</button> 
         </div> 
@@ -233,7 +233,7 @@
       <section class="pane" data-pane="memory">
         <div class="card">
           <div class="card__title">User Memory</div>
-          <div class="fine">Saved facts help yan across chats.</div>
+          <div class="fine">Saved facts help Yaan across chats.</div>
           <div class="list" id="memoryList"></div>
         </div>
         <div class="card">

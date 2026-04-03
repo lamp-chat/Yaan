@@ -11,7 +11,7 @@
   <script>
     // Apply theme before CSS loads to avoid a flash.
     (function () {
-      const KEY = "yan_theme";
+      const KEY = "yaan_theme";
       let t = "";
       try { t = (localStorage.getItem(KEY) || "").trim().toLowerCase(); } catch (e) { t = ""; }
       const val = (t === "light" || t === "dark") ? t : "dark";
@@ -33,7 +33,7 @@
   {% endfor %}
   <script src="{{ url_for('static', filename='brand/i18n.js', v=static_v) }}" defer></script>
   <script>
-    window.__yan__ = {
+    window.__yaan__ = {
       username: {{ (username or "User")|tojson }},
       displayName: {{ (display_name or username or "User")|tojson }},
       csrfToken: {{ (csrf_token or "")|tojson }},

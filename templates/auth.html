@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign in - yan</title>
+  <title>Sign in - Yaan</title>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='brand/bulb.png', v=static_v) }}">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,7 +26,7 @@
   <script>
     (function () {
       // After logout, show the intro again on next /ai load.
-      try { sessionStorage.removeItem("yan_intro_seen"); } catch (e) {}
+      try { sessionStorage.removeItem("yaan_intro_seen"); } catch (e) {}
 
       const RTL_LANGS = new Set(["fa"]);
       const dict = {
@@ -41,8 +41,8 @@
           auth_b2: "Typing indicator, copy, and feedback actions.",
           auth_b3: "History, share links, files, notes, memory.",
           auth_tip: "Tip: If Google popup is blocked, allow popups and try again.",
-          about_yan: "About YAN",
-          about_yan_desc: "YAN is a minimalist AI chat workspace focused on speed, clarity, and calm.",
+          about_yaan: "About Yaan",
+          about_yaan_desc: "Yaan is a minimalist AI chat workspace focused on speed, clarity, and calm.",
           creator: "Creator",
           creator_name: "Erik Petrosyan",
           login: "Login",
@@ -82,8 +82,8 @@
           auth_b2: "Typing ցուցիչ, copy և feedback գործողություններ։",
           auth_b3: "Պատմություն, share link-եր, ֆայլեր, նշումներ, հիշողություն։",
           auth_tip: "Հուշում. եթե Google popup-ը blocked է, թույլատրի popup-ները ու փորձիր նորից։",
-          about_yan: "YAN-ի մասին",
-          about_yan_desc: "YAN-ը մինիմալիստական AI chat workspace է՝ արագ, պարզ ու հանգիստ փորձառության համար։",
+          about_yaan: "Yaan-ի մասին",
+          about_yaan_desc: "Yaan-ը մինիմալիստական AI chat workspace է՝ արագ, պարզ ու հանգիստ փորձառության համար։",
           creator: "Ստեղծող",
           creator_name: "Erik Petrosyan",
           login: "Մուտք",
@@ -123,8 +123,8 @@
           auth_b2: "Индикатор печати, копирование, feedback действия.",
           auth_b3: "История, ссылки для шаринга, файлы, заметки, память.",
           auth_tip: "Совет: если popup Google блокируется, разрешите popups и попробуйте снова.",
-          about_yan: "О YAN",
-          about_yan_desc: "YAN это минималистичное AI чат-пространство: быстро, ясно и спокойно.",
+          about_yaan: "О Yaan",
+          about_yaan_desc: "Yaan это минималистичное AI чат-пространство: быстро, ясно и спокойно.",
           creator: "Создатель",
           creator_name: "Erik Petrosyan",
           login: "Вход",
@@ -164,8 +164,8 @@
           auth_b2: "Tippen-Indikator, Kopieren, Feedback-Aktionen.",
           auth_b3: "Verlauf, Share-Links, Dateien, Notizen, Memory.",
           auth_tip: "Tipp: Wenn Google-Popups blockiert sind, Popups erlauben und erneut versuchen.",
-          about_yan: "Über YAN",
-          about_yan_desc: "YAN ist ein minimalistischer AI-Chat-Workspace: schnell, klar und ruhig.",
+          about_yaan: "Über Yaan",
+          about_yaan_desc: "Yaan ist ein minimalistischer AI-Chat-Workspace: schnell, klar und ruhig.",
           creator: "Ersteller",
           creator_name: "Erik Petrosyan",
           login: "Login",
@@ -205,8 +205,8 @@
           auth_b2: "نمایش تایپ، کپی و بازخورد.",
           auth_b3: "تاریخچه، لینک اشتراک، فایل‌ها، یادداشت‌ها، حافظه.",
           auth_tip: "نکته: اگر پاپ‌آپ Google مسدود است، popups را فعال کنید و دوباره تلاش کنید.",
-          about_yan: "درباره YAN",
-          about_yan_desc: "YAN یک فضای چت مینیمال برای سرعت، وضوح و آرامش است.",
+          about_yaan: "درباره Yaan",
+          about_yaan_desc: "Yaan یک فضای چت مینیمال برای سرعت، وضوح و آرامش است.",
           creator: "سازنده",
           creator_name: "Erik Petrosyan",
           login: "ورود",
@@ -293,7 +293,7 @@
       }
 
       // Expose for auth_firebase.js (password toggle).
-      window.__yanAuthI18n = {
+      window.__yaanAuthI18n = {
         getLang,
         setLang,
         t: (key) => tr(getLang(), key),
@@ -323,9 +323,9 @@
       <section class="auth-aside">
         <div class="auth-brand">
           <a class="auth-brand__link" href="/" data-nav>
-            <img class="auth-brand__logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="yan">
+            <img class="auth-brand__logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="Yaan">
             <div class="auth-brand__meta">
-              <div class="auth-brand__name">yan</div>
+              <div class="auth-brand__name">Yaan</div>
               <div class="auth-brand__sub" data-i18n="auth_welcome_sub">Sign in to continue</div>
             </div>
           </a>
@@ -377,8 +377,8 @@
         </div>
 
         <div class="about glass" data-reveal>
-          <div class="about__title" data-i18n="about_yan">About YAN</div>
-          <div class="about__text" data-i18n="about_yan_desc">YAN is a minimalist AI chat workspace focused on speed, clarity, and calm.</div>
+          <div class="about__title" data-i18n="about_yaan">About Yaan</div>
+          <div class="about__text" data-i18n="about_yaan_desc">Yaan is a minimalist AI chat workspace focused on speed, clarity, and calm.</div>
           <div class="about__meta">
             <div class="about__row">
               <span class="about__k" data-i18n="creator">Creator</span>

@@ -40,11 +40,11 @@ export default function Sidebar({
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div className="h-9 w-9 rounded-2xl border chip grid place-items-center shadow-float">
-              <span className="text-[12px] font-semibold tracking-widest t1">YAN</span>
+              <span className="text-[12px] font-semibold tracking-widest t1">Yaan</span>
             </div>
             <div className="min-w-0">
               <div className="text-[12px] font-semibold tracking-[0.18em] uppercase t1 truncate">
-                yan
+                Yaan
               </div>
               <div className="text-xs t2 truncate">{t("assistant")}</div>
             </div>

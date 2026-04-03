@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ title }} - yan</title>
+  <title>{{ title }} - Yaan</title>
   <script>document.documentElement.classList.add("fx")</script>
   <link rel="stylesheet" href="{{ url_for('static', filename='brand/motion.css', v=static_v) }}">
   <style>
@@ -92,13 +92,13 @@
   <div class="wrap">
     <header class="top" data-reveal>
       <div class="brand">
-        <img class="logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="yan">
+        <img class="logo" src="{{ url_for('static', filename='brand/logo.png', v=static_v) }}" alt="Yaan">
         <div>
           <div class="title">{{ title }}</div>
           <div class="meta">Shared conversation - read-only</div>
         </div>
       </div>
-      <a class="btn" href="/auth">Open yan</a>
+      <a class="btn" href="/auth">Open Yaan</a>
     </header>
 
     <section class="thread" id="thread" data-reveal></section>
@@ -155,7 +155,7 @@
       bubble.appendChild(md);
       const meta = document.createElement("div");
       meta.className = "meta2";
-      meta.textContent = `${m.role === "user" ? "User" : "yan"} - ${fmtTime(m.created_at_utc)}`;
+      meta.textContent = `${m.role === "user" ? "User" : "Yaan"} - ${fmtTime(m.created_at_utc)}`;
       wrap.appendChild(bubble);
       wrap.appendChild(meta);
       thread.appendChild(wrap);

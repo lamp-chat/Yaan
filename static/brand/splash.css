@@ -1,5 +1,5 @@
-/* yan splash intro: short, modern logo reveal, then auto-fades out. */ 
-.yan-splash { 
+/* yaan splash intro: short, modern logo reveal, then auto-fades out. */ 
+.yaan-splash { 
   position: fixed; 
   inset: 0; 
   z-index: 9999; 
@@ -10,10 +10,10 @@
               linear-gradient(160deg, #0b0f17, #07090c); 
   color: rgba(255, 255, 255, 0.92); 
   overflow: hidden; 
-  animation: yanSplashFade 1800ms ease forwards; 
+  animation: yaanSplashFade 1800ms ease forwards; 
 } 
  
-.yan-splash__inner { 
+.yaan-splash__inner { 
   position: relative; 
   display: grid; 
   place-items: center; 
@@ -24,10 +24,10 @@
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(0, 0, 0, 0.18)); 
   box-shadow: 0 30px 90px rgba(0, 0, 0, 0.60); 
   backdrop-filter: blur(12px); 
-  animation: yanSplashCard 520ms cubic-bezier(.2, .95, .2, 1) both; 
+  animation: yaanSplashCard 520ms cubic-bezier(.2, .95, .2, 1) both; 
 } 
  
-.yan-splash__inner::before { 
+.yaan-splash__inner::before { 
   content: ""; 
   position: absolute; 
   inset: -60%; 
@@ -41,7 +41,7 @@
   pointer-events: none; 
 } 
  
-.yan-splash__inner::after { 
+.yaan-splash__inner::after { 
   content: ""; 
   position: absolute; 
   inset: -40%; 
@@ -50,7 +50,7 @@
   pointer-events: none; 
 } 
  
-.yan-splash__logo { 
+.yaan-splash__logo { 
   width: 76px; 
   height: 76px; 
   border-radius: 24px; 
@@ -59,11 +59,11 @@
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45); 
   display: block; 
   object-fit: cover; 
-  animation: yanSplashLogo 860ms cubic-bezier(.2, .9, .2, 1) both; 
+  animation: yaanSplashLogo 860ms cubic-bezier(.2, .9, .2, 1) both; 
   z-index: 1; 
 } 
  
-.yan-splash__word { 
+.yaan-splash__word { 
   position: relative; 
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI Variable Text", "Segoe UI", sans-serif; 
   font-weight: 1000; 
@@ -76,30 +76,30 @@
     0 14px 44px rgba(0, 0, 0, 0.55), 
     0 0 0 rgba(0, 0, 0, 0); 
   clip-path: inset(0 100% 0 0); 
-  animation: yanSplashWrite 760ms cubic-bezier(.2, .95, .2, 1) 180ms forwards; 
+  animation: yaanSplashWrite 760ms cubic-bezier(.2, .95, .2, 1) 180ms forwards; 
 } 
  
-.yan-splash__word::after { 
+.yaan-splash__word::after { 
   content: ""; 
   position: absolute; 
   inset: -60% -30%; 
   background: linear-gradient(120deg, transparent 38%, rgba(255, 255, 255, 0.22) 50%, transparent 62%); 
   opacity: 0; 
   pointer-events: none; 
-  animation: yanSplashGlow 1050ms ease 360ms forwards; 
+  animation: yaanSplashGlow 1050ms ease 360ms forwards; 
 } 
  
-.yan-splash__rule { 
+.yaan-splash__rule { 
   width: min(420px, 62vw); 
   height: 1px; 
   border-radius: 999px; 
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.42), transparent); 
   opacity: 0; 
   transform: scaleX(0.6); 
-  animation: yanSplashRule 560ms ease 420ms forwards; 
+  animation: yaanSplashRule 560ms ease 420ms forwards; 
 } 
  
-.yan-splash__skip { 
+.yaan-splash__skip { 
   position: fixed; 
   right: 16px; 
   bottom: 16px; 
@@ -114,52 +114,52 @@
   backdrop-filter: blur(8px); 
 } 
 
-.yan-splash__skip:hover {
+.yaan-splash__skip:hover {
   color: rgba(255, 255, 255, 1);
   border-color: rgba(55, 151, 240, 0.62);
 }
 
-.yan-splash--hidden {
+.yaan-splash--hidden {
   animation: none !important;
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
 }
 
-@keyframes yanSplashLogo {
+@keyframes yaanSplashLogo {
   0% { transform: translateY(8px) scale(0.92) rotate(-2deg); filter: saturate(1.05) brightness(0.98); }
   60% { transform: translateY(0) scale(1.02) rotate(0deg); }
   100% { transform: translateY(0) scale(1) rotate(0deg); filter: saturate(1.08) brightness(1.03); }
 }
 
-@keyframes yanSplashCard {
+@keyframes yaanSplashCard {
   0% { opacity: 0; transform: translateY(10px) scale(0.98); filter: blur(0.6px); }
   100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
 }
 
-@keyframes yanSplashRing {
+@keyframes yaanSplashRing {
   0% { transform: scale(0.86) rotate(-18deg); opacity: 0; }
   55% { opacity: 0.92; }
   100% { transform: scale(1) rotate(18deg); opacity: 0.92; }
 }
 
-@keyframes yanSplashWrite {
+@keyframes yaanSplashWrite {
   0% { clip-path: inset(0 100% 0 0); filter: blur(1px); }
   100% { clip-path: inset(0 0 0 0); filter: blur(0); }
 }
 
-@keyframes yanSplashGlow {
+@keyframes yaanSplashGlow {
   0% { opacity: 0; transform: translateX(-8%) rotate(-6deg); }
   35% { opacity: 0.9; }
   100% { opacity: 0; transform: translateX(10%) rotate(6deg); }
 }
 
-@keyframes yanSplashRule {
+@keyframes yaanSplashRule {
   0% { opacity: 0; transform: scaleX(0.5); }
   100% { opacity: 0.9; transform: scaleX(1); }
 }
 
-@keyframes yanSplashFade { 
+@keyframes yaanSplashFade { 
   0% { opacity: 1; visibility: visible; pointer-events: auto; } 
   66% { opacity: 1; } 
   88% { opacity: 0; } 
@@ -167,29 +167,29 @@
 } 
 
 /* Light pages (IG theme) */
-body.ig-light .yan-splash {
+body.ig-light .yaan-splash {
   background: #fafafa;
   color: #262626;
 }
 
-body.ig-light .yan-splash__inner {
+body.ig-light .yaan-splash__inner {
   border-color: rgba(0, 0, 0, 0.10);
   background: #ffffff;
   box-shadow: 0 22px 70px rgba(0, 0, 0, 0.12);
 }
 
-body.ig-light .yan-splash__word {
+body.ig-light .yaan-splash__word {
   color: #262626;
   text-shadow: 0 14px 44px rgba(0, 0, 0, 0.12);
 }
 
-body.ig-light .yan-splash__rule {
+body.ig-light .yaan-splash__rule {
   background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.22), transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .yan-splash { animation: none; opacity: 0; visibility: hidden; pointer-events: none; }
-  .yan-splash__logo,
-  .yan-splash__word,
-  .yan-splash__rule { animation: none; }
+  .yaan-splash { animation: none; opacity: 0; visibility: hidden; pointer-events: none; }
+  .yaan-splash__logo,
+  .yaan-splash__word,
+  .yaan-splash__rule { animation: none; }
 }

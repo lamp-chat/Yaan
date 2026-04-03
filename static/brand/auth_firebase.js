@@ -200,7 +200,7 @@ function togglePw(inputEl, btnEl) {
   inputEl.type = isPw ? "text" : "password";
   const t = (k) => {
     try {
-      if (window.__yanAuthI18n && window.__yanAuthI18n.t) return window.__yanAuthI18n.t(k);
+      if (window.__yaanAuthI18n && window.__yaanAuthI18n.t) return window.__yaanAuthI18n.t(k);
     } catch (e) {}
     return k === "hide" ? "Hide" : "Show";
   };

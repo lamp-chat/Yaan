@@ -1,9 +1,9 @@
 (function () { 
-  const KEY = "yan_splash_seen"; 
-  const splash = document.getElementById("yanSplash"); 
+  const KEY = "yaan_splash_seen"; 
+  const splash = document.getElementById("yaanSplash"); 
   if (!splash) return; 
  
-  const hide = () => splash.classList.add("yan-splash--hidden"); 
+  const hide = () => splash.classList.add("yaan-splash--hidden"); 
 
   let reducedMotion = false;
   try {
