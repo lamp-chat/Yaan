@@ -14,7 +14,7 @@ from urllib.parse import urlsplit, urlunsplit
 from uuid import uuid4
 
 from authlib.integrations.flask_client import OAuth
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for, Response, abort, send_file
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, Response, abort, send_file, make_response
 from openai import OpenAI
 from werkzeug.utils import secure_filename
 
@@ -3077,7 +3077,7 @@ def auth_page():
     if "user_id" in session:
         return redirect(url_for("app_home"))
     fb_err = _firebase_init_error()
-    return render_template(
+    resp = make_response(render_template(
         "auth.html",
         error=request.args.get("error", ""),
         message=request.args.get("message", ""),
@@ -3085,7 +3085,11 @@ def auth_page():
         microsoft_enabled="microsoft" in oauth_clients,
         firebase_config=_firebase_web_config(),
         firebase_error=fb_err,
-    )
+    ))
+    # Avoid caching auth pages to prevent "stuck" flows after logout/login redirects.
+    resp.headers["Cache-Control"] = "no-store, max-age=0"
+    resp.headers["Pragma"] = "no-cache"
+    return resp
 
 
 @app.route("/oauth/<provider>")
@@ -3313,7 +3317,11 @@ def logout():
     if user_id in conversations:
         conversations.pop(user_id, None)
     session.clear()
-    return redirect(url_for("auth_page", message="Logged out."))
+    resp = redirect(url_for("auth_page", message="Logged out."))
+    # Prevent browsers/proxies from caching the redirect target.
+    resp.headers["Cache-Control"] = "no-store, max-age=0"
+    resp.headers["Pragma"] = "no-cache"
+    return resp
 
 
 @app.route("/email-login/request", methods=["POST"])
