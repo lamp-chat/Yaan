@@ -69,6 +69,8 @@ export default function App() {
 
   const threadRef = useRef(null);
   const aborterRef = useRef(null);
+  const loadSeqRef = useRef(0);
+  const optimisticSendRef = useRef({ convId: null, untilMs: 0 });
 
   const empty = !loadingMsgs && !streaming && (!messages || messages.length === 0);
 
@@ -190,13 +192,29 @@ export default function App() {
   useEffect(() => {
     if (!activeId) return;
     let alive = true;
+    const seq = (loadSeqRef.current += 1);
     (async () => {
       try {
         setLoadingMsgs(true);
-        setMessages([]);
+        const optimistic = (() => {
+          const v = optimisticSendRef.current || { convId: null, untilMs: 0 };
+          return (v.convId === activeId) && (Date.now() < Number(v.untilMs || 0));
+        })();
+        // Avoid clobbering an in-flight optimistic first message for a brand new conversation.
+        if (!optimistic) setMessages([]);
         const data = await api(`/api/ai/conversations/${activeId}/messages?limit=500`, { method: "GET" });
         if (!alive) return;
-        setMessages(data.messages || []);
+        if (seq !== loadSeqRef.current) return;
+        const next = data.messages || [];
+        const optimisticNow = (() => {
+          const v = optimisticSendRef.current || { convId: null, untilMs: 0 };
+          return (v.convId === activeId) && (Date.now() < Number(v.untilMs || 0));
+        })();
+        // If we raced a first-send, the conversation may still be empty on the server.
+        // Keep the optimistic UI rather than overwriting it with [].
+        if (!(optimisticNow && next.length === 0)) {
+          setMessages(next);
+        }
         requestAnimationFrame(() => scrollToBottom());
       } catch (e) {
         setToast(e.message || t("failed_load_messages"));
@@ -216,12 +234,16 @@ export default function App() {
   async function createConversation(opts = {}) {
     const title = (opts && typeof opts.title === "string") ? opts.title : "";
     const clearDraft = (opts && Object.prototype.hasOwnProperty.call(opts, "clearDraft")) ? !!opts.clearDraft : true;
+    const markOptimistic = (opts && Object.prototype.hasOwnProperty.call(opts, "markOptimistic")) ? !!opts.markOptimistic : false;
 
     // Store an empty title in DB; UI renders localized fallback for "New chat".
     const data = await api("/api/ai/conversations", { method: "POST", body: JSON.stringify({ title, mode }) });
     const c = data.conversation;
     const list = await api(`/api/ai/conversations?q=&limit=120`, { method: "GET" });
     setConversations(list.conversations || []);
+    if (markOptimistic && c && c.id) {
+      optimisticSendRef.current = { convId: c.id, untilMs: Date.now() + 15000 };
+    }
     setActiveId(c.id);
     if (clearDraft) setDraft("");
     return c.id;
@@ -272,7 +294,7 @@ export default function App() {
     const firstTurn = !messages || messages.length === 0;
     if (!convId) {
       try {
-        convId = await createConversation({ title: "", clearDraft: false });
+        convId = await createConversation({ title: "", clearDraft: false, markOptimistic: true });
       } catch (e) {
         setToast((e && e.message) || t("send_failed"));
         return;
